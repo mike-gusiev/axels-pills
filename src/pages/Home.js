@@ -62,6 +62,40 @@ const MedicationSystem = () => {
     const [newMedicationPills, setNewMedicationPills] = useState('');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [currentDate, setCurrentDate] = useState(new Date());
+    const todayISO = () => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+    const [selectedDate, setSelectedDate] = useState(todayISO());
+    const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffInDays = (a, b) => {
+        const A = startOfDay(a).getTime();
+        const B = startOfDay(b).getTime();
+        return Math.round((A - B) / (1000 * 60 * 60 * 24));
+    };
+    const dailyFor = (m) => (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
+    const pillsAtDate = (m, asOfISO) => {
+        const daily = dailyFor(m);
+        if (!daily)
+            return Infinity;
+        const today = new Date();
+        const asOf = new Date(asOfISO);
+        const forward = Math.max(0, diffInDays(asOf, today));
+        const projected = m.pillsRemaining - daily * forward;
+        return Math.max(0, projected);
+    };
+    const daysRemainingAt = (m, asOfISO) => {
+        const daily = dailyFor(m);
+        if (!daily)
+            return Infinity;
+        const pills = pillsAtDate(m, asOfISO);
+        if (pills === Infinity)
+            return Infinity;
+        return Math.floor(pills / daily);
+    };
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentDate(new Date());
@@ -146,31 +180,31 @@ const MedicationSystem = () => {
         const daily = getDailyConsumption(medication);
         return daily > 0 ? Math.floor(medication.pillsRemaining / daily) : Infinity;
     };
-    const getAllMedications = () => {
-        const allMeds = [];
-        patients.forEach((patient) => {
-            patient.medications.forEach((med) => {
-                const existing = allMeds.find((m) => m.name === med.name);
-                if (existing) {
-                    existing.totalPills += med.pillsRemaining;
-                    existing.patients.push(patient.name);
-                    existing.dailyConsumption += getDailyConsumption(med);
-                }
-                else {
-                    allMeds.push({
-                        name: med.name,
-                        totalPills: med.pillsRemaining,
-                        patients: [patient.name],
-                        dailyConsumption: getDailyConsumption(med),
-                        daysRemaining: getDaysRemaining(med),
-                    });
-                }
+    const getAllMedications = (asOfISO) => {
+        const byName = new Map();
+        patients.forEach((p) => {
+            p.medications.forEach((m) => {
+                const key = m.name;
+                const existing = byName.get(key) ?? {
+                    name: key,
+                    totalPills: 0,
+                    patients: [],
+                    dailyConsumption: 0,
+                    daysRemaining: Infinity,
+                };
+                const daily = dailyFor(m);
+                const pills = pillsAtDate(m, asOfISO);
+                existing.totalPills += pills === Infinity ? 0 : pills;
+                existing.dailyConsumption += daily;
+                if (!existing.patients.includes(p.name))
+                    existing.patients.push(p.name);
+                byName.set(key, existing);
             });
         });
-        return allMeds.map((med) => ({
-            ...med,
-            daysRemaining: med.dailyConsumption > 0
-                ? Math.floor(med.totalPills / med.dailyConsumption)
+        return Array.from(byName.values()).map((m) => ({
+            ...m,
+            daysRemaining: m.dailyConsumption
+                ? Math.floor(m.totalPills / m.dailyConsumption)
                 : Infinity,
         }));
     };
@@ -187,7 +221,8 @@ const MedicationSystem = () => {
         })));
     };
     const formatDate = (date) => {
-        return date.toLocaleDateString('ru-RU', {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        return d.toLocaleDateString('ru-RU', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
@@ -241,10 +276,10 @@ const MedicationSystem = () => {
                                                 }) }), _jsxs("div", { className: "mt-2 ml-6 text-sm text-gray-600", children: [_jsx("strong", { children: "\u041F\u0440\u0438\u043D\u0438\u043C\u0430\u0442\u044C:" }), " ", getScheduleText(medication), _jsxs("span", { className: "ml-4", children: [_jsx("strong", { children: "\u0412 \u043C\u0435\u0441\u044F\u0446:" }), " ~", getMonthlyConsumption(medication), " \u0442\u0430\u0431."] })] })] }, medication.id));
                                 }), patient.medications.length === 0 && (_jsx("div", { className: "text-gray-500 text-center py-4 italic", children: "\u041F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u044B \u043D\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u044B" }))] })] }, patient.id))) }), patients.length === 0 && (_jsxs("div", { className: "text-center py-8 text-gray-500", children: [_jsx(User, { className: "w-16 h-16 mx-auto mb-4 text-gray-300" }), _jsx("p", { className: "text-lg", children: "\u041F\u0430\u0446\u0438\u0435\u043D\u0442\u044B \u043D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B" })] }))] }));
     const MedicationsPage = () => {
-        const allMedications = getAllMedications();
+        const allMedications = getAllMedications(selectedDate);
         const criticalMedications = allMedications.filter((med) => getWarningLevel(med.daysRemaining) === 'critical');
         const warningMedications = allMedications.filter((med) => getWarningLevel(med.daysRemaining) === 'warning');
-        return (_jsxs("div", { className: "space-y-6", children: [_jsx("div", { className: "bg-white rounded-lg shadow-lg p-6", children: _jsxs("div", { className: "flex items-center justify-between mb-4", children: [_jsxs("h2", { className: "text-2xl font-semibold text-gray-800 flex items-center", children: [_jsx(Calendar, { className: "w-6 h-6 mr-2 text-blue-600" }), "\u0421\u0435\u0433\u043E\u0434\u043D\u044F"] }), _jsx("div", { className: "text-lg font-medium text-blue-600", children: formatDate(currentDate) })] }) }), (criticalMedications.length > 0 || warningMedications.length > 0) && (_jsxs("div", { className: "bg-white rounded-lg shadow-lg p-6", children: [_jsxs("h2", { className: "text-xl font-semibold text-gray-800 mb-4 flex items-center", children: [_jsx(AlertTriangle, { className: "w-5 h-5 mr-2 text-orange-600" }), "\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F"] }), criticalMedications.length > 0 && (_jsxs("div", { className: "mb-4", children: [_jsx("h3", { className: "font-medium text-red-800 mb-2", children: "\u041A\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u0443\u0440\u043E\u0432\u0435\u043D\u044C \u0437\u0430\u043F\u0430\u0441\u043E\u0432:" }), _jsx("div", { className: "space-y-2", children: criticalMedications.map((med, index) => (_jsx("div", { className: "bg-red-50 border-l-4 border-red-400 p-3 rounded", children: _jsxs("p", { className: "text-red-800", children: [_jsx("strong", { children: med.name }), " - \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C ", med.totalPills, ' ', "\u0442\u0430\u0431. (\u0445\u0432\u0430\u0442\u0438\u0442 \u043D\u0430 ", med.daysRemaining, " \u0434\u043D.)"] }) }, index))) })] })), warningMedications.length > 0 && (_jsxs("div", { children: [_jsx("h3", { className: "font-medium text-yellow-800 mb-2", children: "\u0421\u043A\u043E\u0440\u043E \u0437\u0430\u043A\u043E\u043D\u0447\u0438\u0442\u0441\u044F:" }), _jsx("div", { className: "space-y-2", children: warningMedications.map((med, index) => (_jsx("div", { className: "bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded", children: _jsxs("p", { className: "text-yellow-800", children: [_jsx("strong", { children: med.name }), " - \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C ", med.totalPills, ' ', "\u0442\u0430\u0431. (\u0445\u0432\u0430\u0442\u0438\u0442 \u043D\u0430 ", med.daysRemaining, " \u0434\u043D.)"] }) }, index))) })] }))] })), _jsxs("div", { className: "bg-white rounded-lg shadow-lg p-6", children: [_jsxs("h2", { className: "text-2xl font-semibold text-gray-800 mb-6 flex items-center", children: [_jsx(Package, { className: "w-6 h-6 mr-2 text-green-600" }), "\u0412\u0441\u0435 \u043F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u044B"] }), _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full table-auto", children: [_jsx("thead", { children: _jsxs("tr", { className: "bg-gray-50 border-b", children: [_jsx("th", { className: "text-left p-3 font-semibold", children: "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u0430" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u041E\u0431\u0449\u0438\u0439 \u043E\u0441\u0442\u0430\u0442\u043E\u043A" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0420\u0430\u0441\u0445\u043E\u0434 \u0432 \u0434\u0435\u043D\u044C" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0425\u0432\u0430\u0442\u0438\u0442 \u043D\u0430 \u0434\u043D\u0435\u0439" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u041F\u0440\u0438\u043D\u0438\u043C\u0430\u044E\u0442 \u043F\u0430\u0446\u0438\u0435\u043D\u0442\u044B" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0421\u0442\u0430\u0442\u0443\u0441" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044F" })] }) }), _jsx("tbody", { children: allMedications.map((medication, index) => {
+        return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "mt-4 flex items-center gap-2", children: [_jsx(Calendar, { className: "w-5 h-5 text-blue-600" }), _jsx("span", { className: "text-sm text-gray-700", children: "\u0414\u0430\u0442\u0430:" }), _jsx("input", { type: "date", value: selectedDate, onChange: (e) => setSelectedDate(e.target.value), className: "border rounded px-2 py-1" }), _jsx("span", { className: "text-sm text-blue-600", children: formatDate(selectedDate) })] }), (criticalMedications.length > 0 || warningMedications.length > 0) && (_jsxs("div", { className: "bg-white rounded-lg shadow-lg p-6", children: [_jsxs("h2", { className: "text-xl font-semibold text-gray-800 mb-4 flex items-center", children: [_jsx(AlertTriangle, { className: "w-5 h-5 mr-2 text-orange-600" }), "\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F"] }), criticalMedications.length > 0 && (_jsxs("div", { className: "mb-4", children: [_jsx("h3", { className: "font-medium text-red-800 mb-2", children: "\u041A\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u0443\u0440\u043E\u0432\u0435\u043D\u044C \u0437\u0430\u043F\u0430\u0441\u043E\u0432:" }), _jsx("div", { className: "space-y-2", children: criticalMedications.map((med, index) => (_jsx("div", { className: "bg-red-50 border-l-4 border-red-400 p-3 rounded", children: _jsxs("p", { className: "text-red-800", children: [_jsx("strong", { children: med.name }), " - \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C ", med.totalPills, ' ', "\u0442\u0430\u0431. (\u0445\u0432\u0430\u0442\u0438\u0442 \u043D\u0430 ", med.daysRemaining, " \u0434\u043D.)"] }) }, index))) })] })), warningMedications.length > 0 && (_jsxs("div", { children: [_jsx("h3", { className: "font-medium text-yellow-800 mb-2", children: "\u0421\u043A\u043E\u0440\u043E \u0437\u0430\u043A\u043E\u043D\u0447\u0438\u0442\u0441\u044F:" }), _jsx("div", { className: "space-y-2", children: warningMedications.map((med, index) => (_jsx("div", { className: "bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded", children: _jsxs("p", { className: "text-yellow-800", children: [_jsx("strong", { children: med.name }), " - \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C ", med.totalPills, ' ', "\u0442\u0430\u0431. (\u0445\u0432\u0430\u0442\u0438\u0442 \u043D\u0430 ", med.daysRemaining, " \u0434\u043D.)"] }) }, index))) })] }))] })), _jsxs("div", { className: "bg-white rounded-lg shadow-lg p-6", children: [_jsxs("h2", { className: "text-2xl font-semibold text-gray-800 mb-6 flex items-center", children: [_jsx(Package, { className: "w-6 h-6 mr-2 text-green-600" }), "\u0412\u0441\u0435 \u043F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u044B"] }), _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full table-auto", children: [_jsx("thead", { children: _jsxs("tr", { className: "bg-gray-50 border-b", children: [_jsx("th", { className: "text-left p-3 font-semibold", children: "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u0430" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u041E\u0431\u0449\u0438\u0439 \u043E\u0441\u0442\u0430\u0442\u043E\u043A" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0420\u0430\u0441\u0445\u043E\u0434 \u0432 \u0434\u0435\u043D\u044C" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0425\u0432\u0430\u0442\u0438\u0442 \u043D\u0430 \u0434\u043D\u0435\u0439" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u041F\u0440\u0438\u043D\u0438\u043C\u0430\u044E\u0442 \u043F\u0430\u0446\u0438\u0435\u043D\u0442\u044B" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0421\u0442\u0430\u0442\u0443\u0441" }), _jsx("th", { className: "text-left p-3 font-semibold", children: "\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044F" })] }) }), _jsx("tbody", { children: allMedications.map((medication, index) => {
                                             const warningLevel = getWarningLevel(medication.daysRemaining);
                                             return (_jsxs("tr", { className: "border-b hover:bg-gray-50", children: [_jsx("td", { className: "p-3 font-medium", children: medication.name }), _jsxs("td", { className: "p-3", children: [medication.totalPills, " \u0442\u0430\u0431."] }), _jsxs("td", { className: "p-3", children: [medication.dailyConsumption, " \u0442\u0430\u0431."] }), _jsx("td", { className: "p-3", children: medication.daysRemaining === Infinity
                                                             ? '∞'
