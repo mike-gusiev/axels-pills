@@ -11,7 +11,6 @@ import {
   Package,
 } from 'lucide-react';
 
-// ===== Types =====
 type Page = 'patients' | 'medications';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 type WarningLevel = 'critical' | 'warning' | 'normal';
@@ -101,6 +100,47 @@ const MedicationSystem = () => {
   const [newMedicationPills, setNewMedicationPills] = useState<string>('');
   const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
+  const todayISO = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const [selectedDate, setSelectedDate] = useState<string>(todayISO());
+
+  const startOfDay = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffInDays = (a: Date, b: Date) => {
+    const A = startOfDay(a).getTime();
+    const B = startOfDay(b).getTime();
+    return Math.round((A - B) / (1000 * 60 * 60 * 24));
+  };
+  const dailyFor = (m: Medication) =>
+    (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
+
+  const pillsAtDate = (
+    m: Medication,
+    asOfISO: string
+  ): number | typeof Infinity => {
+    const daily = dailyFor(m);
+    if (!daily) return Infinity;
+    const today = new Date();
+    const asOf = new Date(asOfISO);
+    const forward = Math.max(0, diffInDays(asOf, today));
+    const projected = m.pillsRemaining - daily * forward;
+    return Math.max(0, projected);
+  };
+
+  const daysRemainingAt = (m: Medication, asOfISO: string): number => {
+    const daily = dailyFor(m);
+    if (!daily) return Infinity;
+    const pills = pillsAtDate(m, asOfISO);
+    if (pills === Infinity) return Infinity;
+    return Math.floor(pills / daily);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -210,32 +250,36 @@ const MedicationSystem = () => {
     return daily > 0 ? Math.floor(medication.pillsRemaining / daily) : Infinity;
   };
 
-  const getAllMedications = (): AggregatedMedication[] => {
-    const allMeds: AggregatedMedication[] = [];
-    patients.forEach((patient) => {
-      patient.medications.forEach((med) => {
-        const existing = allMeds.find((m) => m.name === med.name);
-        if (existing) {
-          existing.totalPills += med.pillsRemaining;
-          existing.patients.push(patient.name);
-          existing.dailyConsumption += getDailyConsumption(med);
-        } else {
-          allMeds.push({
-            name: med.name,
-            totalPills: med.pillsRemaining,
-            patients: [patient.name],
-            dailyConsumption: getDailyConsumption(med),
-            daysRemaining: getDaysRemaining(med),
-          });
-        }
+  const getAllMedications = (asOfISO: string): AggregatedMedication[] => {
+    const byName = new Map<string, AggregatedMedication>();
+
+    patients.forEach((p) => {
+      p.medications.forEach((m) => {
+        const key = m.name;
+        const existing = byName.get(key) ?? {
+          name: key,
+          totalPills: 0,
+          patients: [],
+          dailyConsumption: 0,
+          daysRemaining: Infinity,
+        };
+
+        const daily = dailyFor(m);
+        const pills = pillsAtDate(m, asOfISO);
+
+        existing.totalPills += pills === Infinity ? 0 : pills;
+        existing.dailyConsumption += daily;
+        if (!existing.patients.includes(p.name)) existing.patients.push(p.name);
+
+        byName.set(key, existing);
       });
     });
-    return allMeds.map((med) => ({
-      ...med,
-      daysRemaining:
-        med.dailyConsumption > 0
-          ? Math.floor(med.totalPills / med.dailyConsumption)
-          : Infinity,
+
+    return Array.from(byName.values()).map((m) => ({
+      ...m,
+      daysRemaining: m.dailyConsumption
+        ? Math.floor(m.totalPills / m.dailyConsumption)
+        : Infinity,
     }));
   };
 
@@ -257,8 +301,9 @@ const MedicationSystem = () => {
     );
   };
 
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('ru-RU', {
+  const formatDate = (date: Date | string): string => {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleDateString('ru-RU', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -535,7 +580,7 @@ const MedicationSystem = () => {
   );
 
   const MedicationsPage = () => {
-    const allMedications = getAllMedications();
+    const allMedications = getAllMedications(selectedDate);
     const criticalMedications = allMedications.filter(
       (med) => getWarningLevel(med.daysRemaining) === 'critical'
     );
@@ -546,16 +591,18 @@ const MedicationSystem = () => {
     return (
       <div className="space-y-6">
         {/* Календарь и текущая дата */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
-              <Calendar className="w-6 h-6 mr-2 text-blue-600" />
-              Сегодня
-            </h2>
-            <div className="text-lg font-medium text-blue-600">
-              {formatDate(currentDate)}
-            </div>
-          </div>
+        <div className="mt-4 flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-blue-600" />
+          <span className="text-sm text-gray-700">Дата:</span>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border rounded px-2 py-1"
+          />
+          <span className="text-sm text-blue-600">
+            {formatDate(selectedDate)}
+          </span>
         </div>
 
         {/* Уведомления */}
