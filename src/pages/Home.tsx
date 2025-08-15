@@ -11,9 +11,37 @@ import {
   Package,
 } from 'lucide-react';
 
+// ===== Types =====
+type Page = 'patients' | 'medications';
+type TimeOfDay = 'morning' | 'afternoon' | 'evening';
+type WarningLevel = 'critical' | 'warning' | 'normal';
+
+interface Medication {
+  id: number;
+  name: string;
+  morning: boolean;
+  afternoon: boolean;
+  evening: boolean;
+  pillsRemaining: number;
+}
+
+interface Patient {
+  id: number;
+  name: string;
+  medications: Medication[];
+}
+
+interface AggregatedMedication {
+  name: string;
+  totalPills: number;
+  patients: string[];
+  dailyConsumption: number;
+  daysRemaining: number;
+}
+
 const MedicationSystem = () => {
-  const [currentPage, setCurrentPage] = useState('patients');
-  const [patients, setPatients] = useState([
+  const [currentPage, setCurrentPage] = useState<Page>('patients');
+  const [patients, setPatients] = useState<Patient[]>([
     {
       id: 1,
       name: 'Иванов И.И.',
@@ -68,36 +96,36 @@ const MedicationSystem = () => {
     },
   ]);
 
-  const [newPatientName, setNewPatientName] = useState('');
-  const [newMedication, setNewMedication] = useState('');
-  const [newMedicationPills, setNewMedicationPills] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [newPatientName, setNewPatientName] = useState<string>('');
+  const [newMedication, setNewMedication] = useState<string>('');
+  const [newMedicationPills, setNewMedicationPills] = useState<string>('');
+  const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDate(new Date());
-    }, 86400000); // Обновляем каждые 24 часа
+    }, 86400000); // 24h
 
     return () => clearInterval(timer);
   }, []);
 
-  const addPatient = () => {
+  const addPatient = (): void => {
     if (newPatientName.trim()) {
-      const newPatient = {
+      const newPatient: Patient = {
         id: Date.now(),
         name: newPatientName,
         medications: [],
       };
-      setPatients([...patients, newPatient]);
+      setPatients((prev) => [...prev, newPatient]);
       setNewPatientName('');
     }
   };
 
-  const addMedication = (patientId) => {
+  const addMedication = (patientId: number): void => {
     if (newMedication.trim() && newMedicationPills) {
-      setPatients(
-        patients.map((patient) =>
+      setPatients((prev) =>
+        prev.map((patient) =>
           patient.id === patientId
             ? {
                 ...patient,
@@ -109,7 +137,7 @@ const MedicationSystem = () => {
                     morning: false,
                     afternoon: false,
                     evening: false,
-                    pillsRemaining: parseInt(newMedicationPills),
+                    pillsRemaining: parseInt(newMedicationPills, 10),
                   },
                 ],
               }
@@ -121,9 +149,9 @@ const MedicationSystem = () => {
     }
   };
 
-  const removeMedication = (patientId, medicationId) => {
-    setPatients(
-      patients.map((patient) =>
+  const removeMedication = (patientId: number, medicationId: number): void => {
+    setPatients((prev) =>
+      prev.map((patient) =>
         patient.id === patientId
           ? {
               ...patient,
@@ -136,9 +164,13 @@ const MedicationSystem = () => {
     );
   };
 
-  const toggleSchedule = (patientId, medicationId, timeOfDay) => {
-    setPatients(
-      patients.map((patient) =>
+  const toggleSchedule = (
+    patientId: number,
+    medicationId: number,
+    timeOfDay: TimeOfDay
+  ): void => {
+    setPatients((prev) =>
+      prev.map((patient) =>
         patient.id === patientId
           ? {
               ...patient,
@@ -153,19 +185,19 @@ const MedicationSystem = () => {
     );
   };
 
-  const removePatient = (patientId) => {
-    setPatients(patients.filter((patient) => patient.id !== patientId));
+  const removePatient = (patientId: number): void => {
+    setPatients((prev) => prev.filter((patient) => patient.id !== patientId));
   };
 
-  const getScheduleText = (medication) => {
-    const times = [];
+  const getScheduleText = (medication: Medication): string => {
+    const times: string[] = [];
     if (medication.morning) times.push('утром');
     if (medication.afternoon) times.push('днем');
     if (medication.evening) times.push('вечером');
     return times.length > 0 ? times.join(', ') : 'не назначено';
   };
 
-  const getDailyConsumption = (medication) => {
+  const getDailyConsumption = (medication: Medication): number => {
     let daily = 0;
     if (medication.morning) daily++;
     if (medication.afternoon) daily++;
@@ -173,13 +205,13 @@ const MedicationSystem = () => {
     return daily;
   };
 
-  const getDaysRemaining = (medication) => {
+  const getDaysRemaining = (medication: Medication): number => {
     const daily = getDailyConsumption(medication);
     return daily > 0 ? Math.floor(medication.pillsRemaining / daily) : Infinity;
   };
 
-  const getAllMedications = () => {
-    const allMeds = [];
+  const getAllMedications = (): AggregatedMedication[] => {
+    const allMeds: AggregatedMedication[] = [];
     patients.forEach((patient) => {
       patient.medications.forEach((med) => {
         const existing = allMeds.find((m) => m.name === med.name);
@@ -207,25 +239,25 @@ const MedicationSystem = () => {
     }));
   };
 
-  const getMonthlyConsumption = (medication) => {
+  const getMonthlyConsumption = (medication: Medication): number => {
     const daily = getDailyConsumption(medication);
-    return daily * 30; // Приблизительно месяц
+    return daily * 30;
   };
 
-  const updatePillCount = (medName, newCount) => {
-    setPatients(
-      patients.map((patient) => ({
+  const updatePillCount = (medName: string, newCount: string): void => {
+    setPatients((prev) =>
+      prev.map((patient) => ({
         ...patient,
         medications: patient.medications.map((med) =>
           med.name === medName
-            ? { ...med, pillsRemaining: parseInt(newCount) || 0 }
+            ? { ...med, pillsRemaining: parseInt(newCount, 10) || 0 }
             : med
         ),
       }))
     );
   };
 
-  const formatDate = (date) => {
+  const formatDate = (date: Date): string => {
     return date.toLocaleDateString('ru-RU', {
       day: 'numeric',
       month: 'long',
@@ -233,13 +265,13 @@ const MedicationSystem = () => {
     });
   };
 
-  const getWarningLevel = (daysRemaining) => {
+  const getWarningLevel = (daysRemaining: number): WarningLevel => {
     if (daysRemaining <= 3) return 'critical';
     if (daysRemaining <= 7) return 'warning';
     return 'normal';
   };
 
-  const getWarningColor = (level) => {
+  const getWarningColor = (level: WarningLevel): string => {
     switch (level) {
       case 'critical':
         return 'bg-red-100 border-red-300 text-red-800';
@@ -429,41 +461,47 @@ const MedicationSystem = () => {
                     </div>
 
                     <div className="flex gap-4 ml-6">
-                      {['morning', 'afternoon', 'evening'].map((time) => {
-                        const labels = {
-                          morning: 'Утром',
-                          afternoon: 'Днем',
-                          evening: 'Вечером',
-                        };
+                      {(['morning', 'afternoon', 'evening'] as TimeOfDay[]).map(
+                        (time) => {
+                          const labels: Record<TimeOfDay, string> = {
+                            morning: 'Утром',
+                            afternoon: 'Днем',
+                            evening: 'Вечером',
+                          };
 
-                        return (
-                          <label
-                            key={time}
-                            className="flex items-center cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={medication[time]}
-                              onChange={() =>
-                                toggleSchedule(patient.id, medication.id, time)
-                              }
-                              className="sr-only"
-                            />
-                            <div
-                              className={`flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                                medication[time]
-                                  ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                                  : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
-                              }`}
+                          return (
+                            <label
+                              key={time}
+                              className="flex items-center cursor-pointer"
                             >
-                              {medication[time] && (
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                              )}
-                              {labels[time]}
-                            </div>
-                          </label>
-                        );
-                      })}
+                              <input
+                                type="checkbox"
+                                checked={medication[time]}
+                                onChange={() =>
+                                  toggleSchedule(
+                                    patient.id,
+                                    medication.id,
+                                    time
+                                  )
+                                }
+                                className="sr-only"
+                              />
+                              <div
+                                className={`flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                                  medication[time]
+                                    ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                                    : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
+                                }`}
+                              >
+                                {medication[time] && (
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                )}
+                                {labels[time]}
+                              </div>
+                            </label>
+                          );
+                        }
+                      )}
                     </div>
 
                     <div className="mt-2 ml-6 text-sm text-gray-600">
