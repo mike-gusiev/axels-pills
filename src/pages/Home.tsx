@@ -12,13 +12,15 @@ import {
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { db } from '../firebase';
+import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 
 type Page = 'patients' | 'medications';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 type WarningLevel = 'critical' | 'warning' | 'normal';
 
 interface Medication {
-  id: number;
+  id: string;
   name: string;
   morning: boolean;
   afternoon: boolean;
@@ -27,12 +29,13 @@ interface Medication {
 }
 
 interface Patient {
-  id: number;
+  id: string;
   name: string;
   medications: Medication[];
 }
 
 interface AggregatedMedication {
+  id?: string;
   name: string;
   totalPills: number;
   patients: string[];
@@ -44,11 +47,11 @@ const MedicationSystem = () => {
   const [currentPage, setCurrentPage] = useState<Page>('patients');
   const [patients, setPatients] = useState<Patient[]>([
     {
-      id: 1,
+      id: '1',
       name: 'Иванов И.И.',
       medications: [
         {
-          id: 1,
+          id: '1',
           name: 'Аспирин',
           morning: true,
           afternoon: false,
@@ -56,7 +59,7 @@ const MedicationSystem = () => {
           pillsRemaining: 45,
         },
         {
-          id: 2,
+          id: '2',
           name: 'Витамин D',
           morning: true,
           afternoon: false,
@@ -66,11 +69,11 @@ const MedicationSystem = () => {
       ],
     },
     {
-      id: 2,
+      id: '2',
       name: 'Петрова А.С.',
       medications: [
         {
-          id: 3,
+          id: '3',
           name: 'Омега-3',
           morning: true,
           afternoon: true,
@@ -78,7 +81,7 @@ const MedicationSystem = () => {
           pillsRemaining: 28,
         },
         {
-          id: 4,
+          id: '4',
           name: 'Магний',
           morning: false,
           afternoon: false,
@@ -86,7 +89,7 @@ const MedicationSystem = () => {
           pillsRemaining: 8,
         },
         {
-          id: 5,
+          id: '5',
           name: 'Кальций',
           morning: true,
           afternoon: false,
@@ -100,8 +103,27 @@ const MedicationSystem = () => {
   const [newPatientName, setNewPatientName] = useState<string>('');
   const [newMedication, setNewMedication] = useState<string>('');
   const [newMedicationPills, setNewMedicationPills] = useState<string>('');
-  const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [medsFS, setMedsFS] = useState<Medication[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, 'medications'),
+      (snapshot) => {
+        const medications: Medication[] = [];
+        snapshot.forEach((doc) => {
+          medications.push({
+            id: doc.id,
+            ...doc.data(),
+          } as Medication);
+        });
+        setMedsFS(medications);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const todayISO = () => {
     const d = new Date();
@@ -155,7 +177,7 @@ const MedicationSystem = () => {
   const addPatient = (): void => {
     if (newPatientName.trim()) {
       const newPatient: Patient = {
-        id: Date.now(),
+        id: Date.now().toString(),
         name: newPatientName,
         medications: [],
       };
@@ -164,7 +186,7 @@ const MedicationSystem = () => {
     }
   };
 
-  const addMedication = (patientId: number): void => {
+  const addMedication = (patientId: string): void => {
     if (newMedication.trim() && newMedicationPills) {
       setPatients((prev) =>
         prev.map((patient) =>
@@ -174,7 +196,7 @@ const MedicationSystem = () => {
                 medications: [
                   ...patient.medications,
                   {
-                    id: Date.now(),
+                    id: Date.now().toString(), // Changed from number to string
                     name: newMedication,
                     morning: false,
                     afternoon: false,
@@ -191,7 +213,7 @@ const MedicationSystem = () => {
     }
   };
 
-  const removeMedication = (patientId: number, medicationId: number): void => {
+  const removeMedication = (patientId: string, medicationId: string): void => {
     setPatients((prev) =>
       prev.map((patient) =>
         patient.id === patientId
@@ -207,8 +229,8 @@ const MedicationSystem = () => {
   };
 
   const toggleSchedule = (
-    patientId: number,
-    medicationId: number,
+    patientId: string,
+    medicationId: string,
     timeOfDay: TimeOfDay
   ): void => {
     setPatients((prev) =>
@@ -227,7 +249,7 @@ const MedicationSystem = () => {
     );
   };
 
-  const removePatient = (patientId: number): void => {
+  const removePatient = (patientId: string): void => {
     setPatients((prev) => prev.filter((patient) => patient.id !== patientId));
   };
 
@@ -253,36 +275,25 @@ const MedicationSystem = () => {
   };
 
   const getAllMedications = (asOfISO: string): AggregatedMedication[] => {
-    const byName = new Map<string, AggregatedMedication>();
+    return medsFS.map((m) => {
+      const daily =
+        (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
 
-    patients.forEach((p) => {
-      p.medications.forEach((m) => {
-        const key = m.name;
-        const existing = byName.get(key) ?? {
-          name: key,
-          totalPills: 0,
-          patients: [],
-          dailyConsumption: 0,
-          daysRemaining: Infinity,
-        };
+      const pills = pillsAtDate(m, asOfISO);
+      const days =
+        pills === Infinity
+          ? Infinity
+          : Math.floor((pills as number) / (daily || 1));
 
-        const daily = dailyFor(m);
-        const pills = pillsAtDate(m, asOfISO);
-
-        existing.totalPills += pills === Infinity ? 0 : pills;
-        existing.dailyConsumption += daily;
-        if (!existing.patients.includes(p.name)) existing.patients.push(p.name);
-
-        byName.set(key, existing);
-      });
+      return {
+        id: m.id,
+        name: m.name,
+        totalPills: pills === Infinity ? 0 : (pills as number),
+        patients: [],
+        dailyConsumption: daily,
+        daysRemaining: days,
+      };
     });
-
-    return Array.from(byName.values()).map((m) => ({
-      ...m,
-      daysRemaining: m.dailyConsumption
-        ? Math.floor(m.totalPills / m.dailyConsumption)
-        : Infinity,
-    }));
   };
 
   const getMonthlyConsumption = (medication: Medication): number => {
@@ -290,22 +301,15 @@ const MedicationSystem = () => {
     return daily * 30;
   };
 
-  const updatePillCount = (medName: string, newCount: string): void => {
-    setPatients((prev) =>
-      prev.map((patient) => ({
-        ...patient,
-        medications: patient.medications.map((med) =>
-          med.name === medName
-            ? { ...med, pillsRemaining: parseInt(newCount, 10) || 0 }
-            : med
-        ),
-      }))
-    );
+  const updatePillCount = async (id: string, newCount: string) => {
+    const n = parseInt(newCount, 10);
+    if (Number.isNaN(n)) return;
+    await updateDoc(doc(db, 'medications', id), { pillsRemaining: n });
   };
 
   const formatDate = (date: Date | string): string => {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('ua-UA', {
+    return d.toLocaleDateString('uk-UA', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -740,7 +744,10 @@ const MedicationSystem = () => {
                           type="number"
                           placeholder="Нова кількість"
                           onChange={(e) =>
-                            updatePillCount(medication.name, e.target.value)
+                            updatePillCount(
+                              medication.id as string,
+                              e.target.value
+                            )
                           }
                           className="w-24 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
                         />

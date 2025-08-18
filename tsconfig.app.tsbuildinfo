@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/pages/home.tsx","./src/pages/login.tsx"],"version":"5.8.3"}
+{"root":["./src/app.tsx","./src/firebase.ts","./src/main.tsx","./src/vite-env.d.ts","./src/pages/home.tsx","./src/pages/login.tsx","./src/services/medications.ts"],"version":"5.8.3"}

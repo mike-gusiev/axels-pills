@@ -3,15 +3,17 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, User, Pill, Clock, CheckCircle, Calendar, AlertTriangle, Package, } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { db } from '../firebase';
+import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 const MedicationSystem = () => {
     const [currentPage, setCurrentPage] = useState('patients');
     const [patients, setPatients] = useState([
         {
-            id: 1,
+            id: '1',
             name: 'Иванов И.И.',
             medications: [
                 {
-                    id: 1,
+                    id: '1',
                     name: 'Аспирин',
                     morning: true,
                     afternoon: false,
@@ -19,7 +21,7 @@ const MedicationSystem = () => {
                     pillsRemaining: 45,
                 },
                 {
-                    id: 2,
+                    id: '2',
                     name: 'Витамин D',
                     morning: true,
                     afternoon: false,
@@ -29,11 +31,11 @@ const MedicationSystem = () => {
             ],
         },
         {
-            id: 2,
+            id: '2',
             name: 'Петрова А.С.',
             medications: [
                 {
-                    id: 3,
+                    id: '3',
                     name: 'Омега-3',
                     morning: true,
                     afternoon: true,
@@ -41,7 +43,7 @@ const MedicationSystem = () => {
                     pillsRemaining: 28,
                 },
                 {
-                    id: 4,
+                    id: '4',
                     name: 'Магний',
                     morning: false,
                     afternoon: false,
@@ -49,7 +51,7 @@ const MedicationSystem = () => {
                     pillsRemaining: 8,
                 },
                 {
-                    id: 5,
+                    id: '5',
                     name: 'Кальций',
                     morning: true,
                     afternoon: false,
@@ -64,6 +66,20 @@ const MedicationSystem = () => {
     const [newMedicationPills, setNewMedicationPills] = useState('');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [medsFS, setMedsFS] = useState([]);
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, 'medications'), (snapshot) => {
+            const medications = [];
+            snapshot.forEach((doc) => {
+                medications.push({
+                    id: doc.id,
+                    ...doc.data(),
+                });
+            });
+            setMedsFS(medications);
+        });
+        return () => unsubscribe();
+    }, []);
     const todayISO = () => {
         const d = new Date();
         const y = d.getFullYear();
@@ -107,7 +123,7 @@ const MedicationSystem = () => {
     const addPatient = () => {
         if (newPatientName.trim()) {
             const newPatient = {
-                id: Date.now(),
+                id: Date.now().toString(),
                 name: newPatientName,
                 medications: [],
             };
@@ -123,7 +139,7 @@ const MedicationSystem = () => {
                     medications: [
                         ...patient.medications,
                         {
-                            id: Date.now(),
+                            id: Date.now().toString(), // Changed from number to string
                             name: newMedication,
                             morning: false,
                             afternoon: false,
@@ -183,44 +199,31 @@ const MedicationSystem = () => {
         return daily > 0 ? Math.floor(medication.pillsRemaining / daily) : Infinity;
     };
     const getAllMedications = (asOfISO) => {
-        const byName = new Map();
-        patients.forEach((p) => {
-            p.medications.forEach((m) => {
-                const key = m.name;
-                const existing = byName.get(key) ?? {
-                    name: key,
-                    totalPills: 0,
-                    patients: [],
-                    dailyConsumption: 0,
-                    daysRemaining: Infinity,
-                };
-                const daily = dailyFor(m);
-                const pills = pillsAtDate(m, asOfISO);
-                existing.totalPills += pills === Infinity ? 0 : pills;
-                existing.dailyConsumption += daily;
-                if (!existing.patients.includes(p.name))
-                    existing.patients.push(p.name);
-                byName.set(key, existing);
-            });
+        return medsFS.map((m) => {
+            const daily = (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
+            const pills = pillsAtDate(m, asOfISO);
+            const days = pills === Infinity
+                ? Infinity
+                : Math.floor(pills / (daily || 1));
+            return {
+                id: m.id,
+                name: m.name,
+                totalPills: pills === Infinity ? 0 : pills,
+                patients: [],
+                dailyConsumption: daily,
+                daysRemaining: days,
+            };
         });
-        return Array.from(byName.values()).map((m) => ({
-            ...m,
-            daysRemaining: m.dailyConsumption
-                ? Math.floor(m.totalPills / m.dailyConsumption)
-                : Infinity,
-        }));
     };
     const getMonthlyConsumption = (medication) => {
         const daily = getDailyConsumption(medication);
         return daily * 30;
     };
-    const updatePillCount = (medName, newCount) => {
-        setPatients((prev) => prev.map((patient) => ({
-            ...patient,
-            medications: patient.medications.map((med) => med.name === medName
-                ? { ...med, pillsRemaining: parseInt(newCount, 10) || 0 }
-                : med),
-        })));
+    const updatePillCount = async (id, newCount) => {
+        const n = parseInt(newCount, 10);
+        if (Number.isNaN(n))
+            return;
+        await updateDoc(doc(db, 'medications', id), { pillsRemaining: n });
     };
     const formatDate = (date) => {
         const d = typeof date === 'string' ? new Date(date) : date;
@@ -296,7 +299,7 @@ const MedicationSystem = () => {
                                                                 ? 'Критичний'
                                                                 : warningLevel === 'warning'
                                                                     ? 'Попередження'
-                                                                    : 'Норма' }) }), _jsx("td", { className: "p-3", children: _jsx("input", { type: "number", placeholder: "\u041D\u043E\u0432\u0430 \u043A\u0456\u043B\u044C\u043A\u0456\u0441\u0442\u044C", onChange: (e) => updatePillCount(medication.name, e.target.value), className: "w-24 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500" }) })] }, index));
+                                                                    : 'Норма' }) }), _jsx("td", { className: "p-3", children: _jsx("input", { type: "number", placeholder: "\u041D\u043E\u0432\u0430 \u043A\u0456\u043B\u044C\u043A\u0456\u0441\u0442\u044C", onChange: (e) => updatePillCount(medication.id, e.target.value), className: "w-24 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500" }) })] }, index));
                                         }) })] }) }), allMedications.length === 0 && (_jsxs("div", { className: "text-center py-8 text-gray-500", children: [_jsx(Package, { className: "w-16 h-16 mx-auto mb-4 text-gray-300" }), _jsx("p", { className: "text-lg", children: "\u041F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u0438 \u043D\u0435 \u0434\u043E\u0434\u0430\u043D\u0456" })] }))] })] }));
     };
     return (_jsxs("div", { className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100", children: [_jsx(Header, {}), _jsx("div", { className: "max-w-6xl mx-auto px-6 pb-6", children: currentPage === 'patients' ? _jsx(PatientsPage, {}) : _jsx(MedicationsPage, {}) })] }));
