@@ -1,11 +1,7 @@
-import { jsx as _jsx } from "react/jsx-runtime";
-import { useState } from 'react';
-import Login from './pages/Login';
-import Home from './pages/Home';
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Home, Login, Register } from './pages/index';
 export default function App() {
-    const [isAuthed, setIsAuthed] = useState(() => localStorage.getItem('auth') === '1');
-    return isAuthed ? (_jsx(Home, {})) : (_jsx(Login, { onSuccess: () => {
-            localStorage.setItem('auth', '1');
-            setIsAuthed(true);
-        } }));
+    return (_jsx(BrowserRouter, { children: _jsxs(Routes, { children: [_jsx(Route, { path: "/", element: _jsx(ProtectedRoute, { children: _jsx(Home, {}) }) }), _jsx(Route, { path: "/login", element: _jsx(Login, {}) }), _jsx(Route, { path: "/register", element: _jsx(Register, {}) }), _jsx(Route, { path: "*", element: _jsx("div", { children: "404 Not Found" }) })] }) }));
 }

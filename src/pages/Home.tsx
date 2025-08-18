@@ -14,6 +14,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { db } from '../firebase';
 import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { useAuth } from '../hooks/useAuth';
 
 type Page = 'patients' | 'medications';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -44,6 +45,7 @@ interface AggregatedMedication {
 }
 
 const MedicationSystem = () => {
+  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>('patients');
   const [patients, setPatients] = useState<Patient[]>([
     {
@@ -108,22 +110,19 @@ const MedicationSystem = () => {
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, 'medications'),
+    if (!user) return;
+    const unsub = onSnapshot(
+      collection(db, `users/${user.uid}/medications`),
       (snapshot) => {
-        const medications: Medication[] = [];
-        snapshot.forEach((doc) => {
-          medications.push({
-            id: doc.id,
-            ...doc.data(),
-          } as Medication);
-        });
+        const medications: Medication[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Medication, 'id'>),
+        }));
         setMedsFS(medications);
       }
     );
-
-    return () => unsubscribe();
-  }, []);
+    return () => unsub();
+  }, [user]);
 
   const todayISO = () => {
     const d = new Date();
@@ -302,9 +301,12 @@ const MedicationSystem = () => {
   };
 
   const updatePillCount = async (id: string, newCount: string) => {
+    if (!user) return;
     const n = parseInt(newCount, 10);
     if (Number.isNaN(n)) return;
-    await updateDoc(doc(db, 'medications', id), { pillsRemaining: n });
+    await updateDoc(doc(db, `users/${user.uid}/medications/${id}`), {
+      pillsRemaining: n,
+    });
   };
 
   const formatDate = (date: Date | string): string => {
@@ -338,7 +340,7 @@ const MedicationSystem = () => {
       <div className="max-w-6xl mx-auto px-6 py-4">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 flex items-center">
           <Pill className="mr-3 text-blue-600" />
-          Система управління препаратами - Axels Pills Tracker
+          Axels Pills Tracker
         </h1>
         <nav className="flex space-x-1">
           <button

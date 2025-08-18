@@ -5,7 +5,9 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { db } from '../firebase';
 import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { useAuth } from '../hooks/useAuth';
 const MedicationSystem = () => {
+    const { user } = useAuth();
     const [currentPage, setCurrentPage] = useState('patients');
     const [patients, setPatients] = useState([
         {
@@ -68,18 +70,17 @@ const MedicationSystem = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [medsFS, setMedsFS] = useState([]);
     useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, 'medications'), (snapshot) => {
-            const medications = [];
-            snapshot.forEach((doc) => {
-                medications.push({
-                    id: doc.id,
-                    ...doc.data(),
-                });
-            });
+        if (!user)
+            return;
+        const unsub = onSnapshot(collection(db, `users/${user.uid}/medications`), (snapshot) => {
+            const medications = snapshot.docs.map((d) => ({
+                id: d.id,
+                ...d.data(),
+            }));
             setMedsFS(medications);
         });
-        return () => unsubscribe();
-    }, []);
+        return () => unsub();
+    }, [user]);
     const todayISO = () => {
         const d = new Date();
         const y = d.getFullYear();
@@ -220,14 +221,18 @@ const MedicationSystem = () => {
         return daily * 30;
     };
     const updatePillCount = async (id, newCount) => {
+        if (!user)
+            return;
         const n = parseInt(newCount, 10);
         if (Number.isNaN(n))
             return;
-        await updateDoc(doc(db, 'medications', id), { pillsRemaining: n });
+        await updateDoc(doc(db, `users/${user.uid}/medications/${id}`), {
+            pillsRemaining: n,
+        });
     };
     const formatDate = (date) => {
         const d = typeof date === 'string' ? new Date(date) : date;
-        return d.toLocaleDateString('ua-UA', {
+        return d.toLocaleDateString('uk-UA', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
@@ -250,7 +255,7 @@ const MedicationSystem = () => {
                 return 'bg-green-100 border-green-300 text-green-800';
         }
     };
-    const Header = () => (_jsx("div", { className: "bg-white shadow-lg mb-6", children: _jsxs("div", { className: "max-w-6xl mx-auto px-6 py-4", children: [_jsxs("h1", { className: "text-3xl font-bold text-gray-800 mb-4 flex items-center", children: [_jsx(Pill, { className: "mr-3 text-blue-600" }), "\u0421\u0438\u0441\u0442\u0435\u043C\u0430 \u0443\u043F\u0440\u0430\u0432\u043B\u0456\u043D\u043D\u044F \u043F\u0440\u0435\u043F\u0430\u0440\u0430\u0442\u0430\u043C\u0438 - Axels Pills Tracker"] }), _jsxs("nav", { className: "flex space-x-1", children: [_jsxs("button", { onClick: () => setCurrentPage('patients'), className: `px-4 py-2 rounded-md font-medium transition-colors ${currentPage === 'patients'
+    const Header = () => (_jsx("div", { className: "bg-white shadow-lg mb-6", children: _jsxs("div", { className: "max-w-6xl mx-auto px-6 py-4", children: [_jsxs("h1", { className: "text-3xl font-bold text-gray-800 mb-4 flex items-center", children: [_jsx(Pill, { className: "mr-3 text-blue-600" }), "Axels Pills Tracker"] }), _jsxs("nav", { className: "flex space-x-1", children: [_jsxs("button", { onClick: () => setCurrentPage('patients'), className: `px-4 py-2 rounded-md font-medium transition-colors ${currentPage === 'patients'
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`, children: [_jsx(User, { className: "w-4 h-4 inline-block mr-2" }), "\u041F\u0430\u0446\u0456\u0454\u043D\u0442\u0438"] }), _jsxs("button", { onClick: () => setCurrentPage('medications'), className: `px-4 py-2 rounded-md font-medium transition-colors ${currentPage === 'medications'
                                 ? 'bg-blue-600 text-white'
