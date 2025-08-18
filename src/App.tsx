@@ -1,20 +1,24 @@
-import { useState } from 'react';
-import Login from './pages/Login';
-import Home from './pages/Home';
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Home, Login, Register } from './pages/index';
 export default function App() {
-  const [isAuthed, setIsAuthed] = useState(
-    () => localStorage.getItem('auth') === '1'
-  );
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
 
-  return isAuthed ? (
-    <Home />
-  ) : (
-    <Login
-      onSuccess={() => {
-        localStorage.setItem('auth', '1');
-        setIsAuthed(true);
-      }}
-    />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        <Route path="*" element={<div>404 Not Found</div>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
