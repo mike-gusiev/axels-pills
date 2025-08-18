@@ -195,7 +195,7 @@ const MedicationSystem = () => {
                 medications: [
                   ...patient.medications,
                   {
-                    id: Date.now().toString(), // Changed from number to string
+                    id: Date.now().toString(),
                     name: newMedication,
                     morning: false,
                     afternoon: false,
