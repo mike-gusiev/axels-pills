@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   Package,
 } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 type Page = 'patients' | 'medications';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -231,9 +233,9 @@ const MedicationSystem = () => {
 
   const getScheduleText = (medication: Medication): string => {
     const times: string[] = [];
-    if (medication.morning) times.push('утром');
-    if (medication.afternoon) times.push('днем');
-    if (medication.evening) times.push('вечером');
+    if (medication.morning) times.push('вранці');
+    if (medication.afternoon) times.push('вдень');
+    if (medication.evening) times.push('ввечері');
     return times.length > 0 ? times.join(', ') : 'не назначено';
   };
 
@@ -303,7 +305,7 @@ const MedicationSystem = () => {
 
   const formatDate = (date: Date | string): string => {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('ru-RU', {
+    return d.toLocaleDateString('ua-UA', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -332,7 +334,7 @@ const MedicationSystem = () => {
       <div className="max-w-6xl mx-auto px-6 py-4">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 flex items-center">
           <Pill className="mr-3 text-blue-600" />
-          Система управления препаратами
+          Система управління препаратами - Axels Pills Tracker
         </h1>
         <nav className="flex space-x-1">
           <button
@@ -344,7 +346,7 @@ const MedicationSystem = () => {
             }`}
           >
             <User className="w-4 h-4 inline-block mr-2" />
-            Пациенты
+            Пацієнти
           </button>
           <button
             onClick={() => setCurrentPage('medications')}
@@ -355,7 +357,7 @@ const MedicationSystem = () => {
             }`}
           >
             <Package className="w-4 h-4 inline-block mr-2" />
-            Препараты
+            Препарати
           </button>
         </nav>
       </div>
@@ -367,12 +369,12 @@ const MedicationSystem = () => {
       {/* Добавление нового пациента */}
       <div className="bg-blue-50 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-3 text-blue-800">
-          Добавить пациента
+          Додати пацієнта
         </h2>
         <div className="flex gap-3">
           <input
             type="text"
-            placeholder="ФИО пациента"
+            placeholder="ПІБ пацієнта"
             value={newPatientName}
             onChange={(e) => setNewPatientName(e.target.value)}
             className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -382,7 +384,7 @@ const MedicationSystem = () => {
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Добавить
+            Додати
           </button>
         </div>
       </div>
@@ -412,7 +414,7 @@ const MedicationSystem = () => {
               <div className="flex gap-3">
                 <input
                   type="text"
-                  placeholder="Название препарата"
+                  placeholder="Назва препарата"
                   value={selectedPatient === patient.id ? newMedication : ''}
                   onChange={(e) => {
                     setNewMedication(e.target.value);
@@ -422,7 +424,7 @@ const MedicationSystem = () => {
                 />
                 <input
                   type="number"
-                  placeholder="Кол-во таблеток"
+                  placeholder="К-ть таблеток"
                   value={
                     selectedPatient === patient.id ? newMedicationPills : ''
                   }
@@ -437,7 +439,7 @@ const MedicationSystem = () => {
                   className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
                 >
                   <Pill className="w-4 h-4 mr-1" />
-                  Добавить
+                  Додати
                 </button>
               </div>
             </div>
@@ -466,11 +468,11 @@ const MedicationSystem = () => {
                         </h4>
                         <div className="flex items-center mt-1 space-x-4">
                           <span className="text-sm text-gray-600">
-                            Осталось:{' '}
+                            Залишилося:{' '}
                             <strong>{medication.pillsRemaining} таб.</strong>
                           </span>
                           <span className="text-sm text-gray-600">
-                            Хватит на:{' '}
+                            Вистачить на:{' '}
                             <strong>
                               {daysRemaining === Infinity ? '∞' : daysRemaining}{' '}
                               дн.
@@ -482,8 +484,8 @@ const MedicationSystem = () => {
                             >
                               <AlertTriangle className="w-3 h-3 mr-1" />
                               {warningLevel === 'critical'
-                                ? 'Срочно пополнить!'
-                                : 'Скоро закончится'}
+                                ? 'Терміново поповнити!'
+                                : 'Скоро закінчиться'}
                             </span>
                           )}
                         </div>
@@ -501,7 +503,7 @@ const MedicationSystem = () => {
                     <div className="flex items-center mb-2">
                       <Clock className="w-4 h-4 mr-2 text-gray-600" />
                       <span className="text-sm text-gray-600 font-medium">
-                        Расписание приема:
+                        Графік прийому:
                       </span>
                     </div>
 
@@ -509,9 +511,9 @@ const MedicationSystem = () => {
                       {(['morning', 'afternoon', 'evening'] as TimeOfDay[]).map(
                         (time) => {
                           const labels: Record<TimeOfDay, string> = {
-                            morning: 'Утром',
-                            afternoon: 'Днем',
-                            evening: 'Вечером',
+                            morning: 'Вранці',
+                            afternoon: 'Вдень',
+                            evening: 'Ввечері',
                           };
 
                           return (
@@ -550,9 +552,9 @@ const MedicationSystem = () => {
                     </div>
 
                     <div className="mt-2 ml-6 text-sm text-gray-600">
-                      <strong>Принимать:</strong> {getScheduleText(medication)}
+                      <strong>Приймати:</strong> {getScheduleText(medication)}
                       <span className="ml-4">
-                        <strong>В месяц:</strong> ~
+                        <strong>В місяць:</strong> ~
                         {getMonthlyConsumption(medication)} таб.
                       </span>
                     </div>
@@ -562,7 +564,7 @@ const MedicationSystem = () => {
 
               {patient.medications.length === 0 && (
                 <div className="text-gray-500 text-center py-4 italic">
-                  Препараты не назначены
+                  Препарати не призначені
                 </div>
               )}
             </div>
@@ -573,7 +575,7 @@ const MedicationSystem = () => {
       {patients.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           <User className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-lg">Пациенты не добавлены</p>
+          <p className="text-lg">Пацієнти не додані</p>
         </div>
       )}
     </div>
@@ -591,26 +593,38 @@ const MedicationSystem = () => {
     return (
       <div className="space-y-6">
         {/* Календарь и текущая дата */}
-        <div className="mt-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-blue-600" />
-          <span className="text-sm text-gray-700">Дата:</span>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded px-2 py-1"
-          />
-          <span className="text-sm text-blue-600">
-            {formatDate(selectedDate)}
-          </span>
+        <div className="mt-2">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            <span className="text-sm text-gray-700">Дата:</span>
+            <span className="text-sm text-blue-600">
+              {formatDate(selectedDate)}
+            </span>
+          </div>
+
+          <div className="max-w-[300px]">
+            <DatePicker
+              selected={new Date(selectedDate)}
+              onChange={(date: Date | null) => {
+                if (date) {
+                  const y = date.getFullYear();
+                  const m = String(date.getMonth() + 1).padStart(2, '0');
+                  const d = String(date.getDate()).padStart(2, '0');
+                  setSelectedDate(`${y}-${m}-${d}`);
+                }
+              }}
+              inline
+              calendarClassName="w-full"
+            />
+          </div>
         </div>
 
-        {/* Уведомления */}
+        {/* Сповіщення */}
         {(criticalMedications.length > 0 || warningMedications.length > 0) && (
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
-              Уведомления
+              Сповіщення
             </h2>
 
             {criticalMedications.length > 0 && (
@@ -625,8 +639,9 @@ const MedicationSystem = () => {
                       className="bg-red-50 border-l-4 border-red-400 p-3 rounded"
                     >
                       <p className="text-red-800">
-                        <strong>{med.name}</strong> - осталось {med.totalPills}{' '}
-                        таб. (хватит на {med.daysRemaining} дн.)
+                        <strong>{med.name}</strong> - залишилося{' '}
+                        {med.totalPills} таб. (вистачить на {med.daysRemaining}{' '}
+                        дн.)
                       </p>
                     </div>
                   ))}
@@ -637,7 +652,7 @@ const MedicationSystem = () => {
             {warningMedications.length > 0 && (
               <div>
                 <h3 className="font-medium text-yellow-800 mb-2">
-                  Скоро закончится:
+                  Скоро закінчиться:
                 </h3>
                 <div className="space-y-2">
                   {warningMedications.map((med, index) => (
@@ -646,8 +661,9 @@ const MedicationSystem = () => {
                       className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded"
                     >
                       <p className="text-yellow-800">
-                        <strong>{med.name}</strong> - осталось {med.totalPills}{' '}
-                        таб. (хватит на {med.daysRemaining} дн.)
+                        <strong>{med.name}</strong> - залишилося{' '}
+                        {med.totalPills} таб. (вистачить на {med.daysRemaining}{' '}
+                        дн.)
                       </p>
                     </div>
                   ))}
@@ -661,7 +677,7 @@ const MedicationSystem = () => {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
             <Package className="w-6 h-6 mr-2 text-green-600" />
-            Все препараты
+            Всі препарати
           </h2>
 
           <div className="overflow-x-auto">
@@ -669,18 +685,22 @@ const MedicationSystem = () => {
               <thead>
                 <tr className="bg-gray-50 border-b">
                   <th className="text-left p-3 font-semibold">
-                    Название препарата
-                  </th>
-                  <th className="text-left p-3 font-semibold">Общий остаток</th>
-                  <th className="text-left p-3 font-semibold">Расход в день</th>
-                  <th className="text-left p-3 font-semibold">
-                    Хватит на дней
+                    Назва препарата
                   </th>
                   <th className="text-left p-3 font-semibold">
-                    Принимают пациенты
+                    Загальний залишок
+                  </th>
+                  <th className="text-left p-3 font-semibold">
+                    Витрата на день
+                  </th>
+                  <th className="text-left p-3 font-semibold">
+                    Вистачить на днів
+                  </th>
+                  <th className="text-left p-3 font-semibold">
+                    Приймають пацієнти
                   </th>
                   <th className="text-left p-3 font-semibold">Статус</th>
-                  <th className="text-left p-3 font-semibold">Действия</th>
+                  <th className="text-left p-3 font-semibold">Дії</th>
                 </tr>
               </thead>
               <tbody>
@@ -709,16 +729,16 @@ const MedicationSystem = () => {
                           className={`px-2 py-1 rounded-full text-xs font-medium ${getWarningColor(warningLevel)}`}
                         >
                           {warningLevel === 'critical'
-                            ? 'Критический'
+                            ? 'Критичний'
                             : warningLevel === 'warning'
-                              ? 'Предупреждение'
+                              ? 'Попередження'
                               : 'Норма'}
                         </span>
                       </td>
                       <td className="p-3">
                         <input
                           type="number"
-                          placeholder="Новое количество"
+                          placeholder="Нова кількість"
                           onChange={(e) =>
                             updatePillCount(medication.name, e.target.value)
                           }
@@ -735,7 +755,7 @@ const MedicationSystem = () => {
           {allMedications.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg">Препараты не добавлены</p>
+              <p className="text-lg">Препарати не додані</p>
             </div>
           )}
         </div>
