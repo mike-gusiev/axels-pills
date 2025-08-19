@@ -10,7 +10,6 @@ import {
 export type Patient = {
   id: string;
   name: string;
-  medications: string[];
 };
 
 const patientsColRef = (userId: string) =>
@@ -25,7 +24,6 @@ export const listenPatients = (userId: string, callback: Function) => {
 export const addPatient = (userId: string, name: string) => {
   return addDoc(patientsColRef(userId), {
     name,
-    medications: [],
   });
 };
 
