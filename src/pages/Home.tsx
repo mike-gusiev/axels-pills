@@ -16,6 +16,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { db } from '../firebase';
 import {
   collection,
+  setDoc,
   onSnapshot,
   updateDoc,
   addDoc,
@@ -26,6 +27,7 @@ import {
   arrayRemove,
 } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
+import { PatientMedication } from '../services/userMeds';
 
 type Page = 'patients' | 'medications';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -34,9 +36,6 @@ type WarningLevel = 'critical' | 'warning' | 'normal';
 interface Medication {
   id: string;
   name: string;
-  morning: boolean;
-  afternoon: boolean;
-  evening: boolean;
   pillsRemaining: number;
   patientIds: string[];
 }
@@ -44,7 +43,7 @@ interface Medication {
 interface Patient {
   id: string;
   name: string;
-  medications: Medication[];
+  medications: PatientMedication[];
 }
 
 interface AggregatedMedication {
@@ -85,6 +84,53 @@ const MedicationSystem = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
   const [patientsFS, setPatientsFS] = useState<Patient[]>([]);
+
+  const [assignByPatient, setAssignByPatient] = useState<
+    Record<string, Record<string, PatientMedication>>
+  >({});
+
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubs: Array<() => void> = [];
+
+    const unsubPatients = onSnapshot(
+      collection(db, `users/${user.uid}/patients`),
+      (snap) => {
+        // скидаємо старі підписки
+        unsubs.forEach((u) => u());
+        unsubs.length = 0;
+
+        const nextAssignMap: Record<
+          string,
+          Record<string, PatientMedication>
+        > = {};
+
+        snap.docs.forEach((pDoc) => {
+          const pid = pDoc.id;
+          const subUnsub = onSnapshot(
+            collection(db, `users/${user.uid}/patients/${pid}/medications`),
+            (medSnap) => {
+              const inner: Record<string, PatientMedication> = {};
+              medSnap.docs.forEach((mDoc) => {
+                inner[mDoc.id] = {
+                  medicationId: mDoc.id,
+                  ...(mDoc.data() as Omit<PatientMedication, 'medicationId'>),
+                };
+              });
+              setAssignByPatient((prev) => ({ ...prev, [pid]: inner }));
+            }
+          );
+          unsubs.push(subUnsub);
+        });
+      }
+    );
+
+    return () => {
+      unsubPatients();
+      unsubs.forEach((u) => u());
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -131,19 +177,26 @@ const MedicationSystem = () => {
     );
   }, [patientsFS]);
 
-  const medsByPatient = useMemo(() => {
-    const map: Record<string, Medication[]> = {};
-    for (const p of patientsFS) map[p.id] = [];
-    for (const m of medsFS) {
-      if (Array.isArray(m.patientIds)) {
-        for (const pid of m.patientIds) {
-          if (!map[pid]) map[pid] = [];
-          map[pid].push(m);
-        }
-      }
+  const medsByPatient = useMemo((): Record<string, PatientMedication[]> => {
+    const result: Record<string, PatientMedication[]> = {};
+    for (const pid of Object.keys(assignByPatient)) {
+      const assigns = assignByPatient[pid];
+      result[pid] = Object.values(assigns)
+        .map((assign) => {
+          const master = medsFS.find((m) => m.id === assign.medicationId);
+          if (!master) return null;
+          return {
+            ...master,
+            medicationId: assign.medicationId,
+            morning: !!assign.morning,
+            afternoon: !!assign.afternoon,
+            evening: !!assign.evening,
+          } as PatientMedication;
+        })
+        .filter(Boolean) as PatientMedication[];
     }
-    return map;
-  }, [patientsFS, medsFS]);
+    return result;
+  }, [assignByPatient, medsFS]);
 
   const todayISO = () => {
     const d = new Date();
@@ -162,11 +215,11 @@ const MedicationSystem = () => {
     const B = startOfDay(b).getTime();
     return Math.round((A - B) / (1000 * 60 * 60 * 24));
   };
-  const dailyFor = (m: Medication) =>
+  const dailyFor = (m: PatientMedication) =>
     (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
 
   const pillsAtDate = (
-    m: Medication,
+    m: PatientMedication,
     asOfISO: string
   ): number | typeof Infinity => {
     const daily = dailyFor(m);
@@ -178,7 +231,7 @@ const MedicationSystem = () => {
     return Math.max(0, projected);
   };
 
-  const daysRemainingAt = (m: Medication, asOfISO: string): number => {
+  const daysRemainingAt = (m: PatientMedication, asOfISO: string): number => {
     const daily = dailyFor(m);
     if (!daily) return Infinity;
     const pills = pillsAtDate(m, asOfISO);
@@ -216,53 +269,52 @@ const MedicationSystem = () => {
     if (!newMedication.trim()) return;
 
     const name = newMedication.trim();
-
     const existing = medsFS.find(
       (m) => m.name.toLowerCase() === name.toLowerCase()
     );
 
+    let medId: string;
+
     if (existing) {
-      await updateDoc(doc(db, `users/${user.uid}/medications/${existing.id}`), {
+      medId = existing.id;
+      await updateDoc(doc(db, `users/${user.uid}/medications/${medId}`), {
         patientIds: arrayUnion(patientId),
       });
     } else {
-      await addDoc(collection(db, `users/${user.uid}/medications`), {
-        name,
-        morning: false,
-        afternoon: false,
-        evening: false,
-        pillsRemaining: 0,
-        patientIds: [patientId],
-      });
+      const created = await addDoc(
+        collection(db, `users/${user.uid}/medications`),
+        {
+          name,
+          pillsRemaining: 0,
+          patientIds: [patientId],
+        }
+      );
+      medId = created.id;
     }
 
-    setNewMedication('');
-    setNewMedicationPills('');
+    await setDoc(
+      doc(db, `users/${user.uid}/patients/${patientId}/medications/${medId}`),
+      { morning: false, afternoon: false, evening: false },
+      { merge: true }
+    );
+
     setSelectedPatient(patientId);
   };
 
-  const removeMedication = async (
-    patientId: string,
-    medicationId: string
-  ): Promise<void> => {
+  const removeMedication = async (patientId: string, medicationId: string) => {
     if (!user) return;
 
-    await updateDoc(doc(db, `users/${user.uid}/medications/${medicationId}`), {
-      patientIds: arrayRemove(patientId),
-    });
-
-    setPatients((prev) =>
-      prev.map((patient) =>
-        patient.id === patientId
-          ? {
-              ...patient,
-              medications: patient.medications.filter(
-                (med) => med.id !== medicationId
-              ),
-            }
-          : patient
-      )
-    );
+    await Promise.all([
+      updateDoc(doc(db, `users/${user.uid}/medications/${medicationId}`), {
+        patientIds: arrayRemove(patientId),
+      }),
+      deleteDoc(
+        doc(
+          db,
+          `users/${user.uid}/patients/${patientId}/medications/${medicationId}`
+        )
+      ),
+    ]);
   };
 
   const toggleSchedule = (
@@ -286,7 +338,7 @@ const MedicationSystem = () => {
     );
   };
 
-  const getScheduleText = (medication: Medication): string => {
+  const getScheduleText = (medication: PatientMedication): string => {
     const times: string[] = [];
     if (medication.morning) times.push('вранці');
     if (medication.afternoon) times.push('вдень');
@@ -294,7 +346,7 @@ const MedicationSystem = () => {
     return times.length > 0 ? times.join(', ') : 'не назначено';
   };
 
-  const getDailyConsumption = (medication: Medication): number => {
+  const getDailyConsumption = (medication: PatientMedication): number => {
     let daily = 0;
     if (medication.morning) daily++;
     if (medication.afternoon) daily++;
@@ -302,34 +354,56 @@ const MedicationSystem = () => {
     return daily;
   };
 
-  const getDaysRemaining = (medication: Medication): number => {
+  const getDaysRemaining = (medication: PatientMedication): number => {
     const daily = getDailyConsumption(medication);
     return daily > 0 ? Math.floor(medication.pillsRemaining / daily) : Infinity;
   };
 
   const getAllMedications = (asOfISO: string): AggregatedMedication[] => {
     return medsFS.map((m) => {
-      const daily =
-        (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
+      let totalDaily = 0;
+      for (const pid of Object.keys(assignByPatient)) {
+        const assign = assignByPatient[pid]?.[m.id];
+        if (assign) totalDaily += dailyFor(assign);
+      }
 
-      const pills = pillsAtDate(m, asOfISO);
+      const today = new Date();
+      const asOf = new Date(asOfISO);
+      const start = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ).getTime();
+      const end = new Date(
+        asOf.getFullYear(),
+        asOf.getMonth(),
+        asOf.getDate()
+      ).getTime();
+      const forwardDays = Math.max(
+        0,
+        Math.round((end - start) / (1000 * 60 * 60 * 24))
+      );
+
+      const projectedPills =
+        totalDaily > 0
+          ? Math.max(0, m.pillsRemaining - totalDaily * forwardDays)
+          : m.pillsRemaining;
+
       const days =
-        pills === Infinity
-          ? Infinity
-          : Math.floor((pills as number) / (daily || 1));
+        totalDaily > 0 ? Math.floor(projectedPills / totalDaily) : Infinity;
 
       return {
         id: m.id,
         name: m.name,
-        totalPills: pills === Infinity ? 0 : (pills as number),
+        totalPills: projectedPills,
         patients: m.patientIds || [],
-        dailyConsumption: daily,
+        dailyConsumption: totalDaily,
         daysRemaining: days,
       };
     });
   };
 
-  const getMonthlyConsumption = (medication: Medication): number => {
+  const getMonthlyConsumption = (medication: PatientMedication): number => {
     const daily = getDailyConsumption(medication);
     return daily * 30;
   };
@@ -571,7 +645,7 @@ const MedicationSystem = () => {
                                   updateDoc(
                                     doc(
                                       db,
-                                      `users/${user!.uid}/medications/${medication.id}`
+                                      `users/${user!.uid}/patients/${patient.id}/medications/${medication.id}`
                                     ),
                                     { [time]: !medication[time] }
                                   );

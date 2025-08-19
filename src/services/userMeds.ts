@@ -3,57 +3,67 @@ import {
   doc,
   addDoc,
   getDocs,
+  getDoc,
   onSnapshot,
   updateDoc,
   deleteDoc,
-  arrayUnion,
-  arrayRemove,
   increment,
   QuerySnapshot,
   DocumentData,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
-export interface Medication {
+export interface MedicationGlobal {
   id: string;
+  name: string;
+  pillsRemaining: number;
+}
+
+export interface PatientMedication {
+  id: string;
+  medicationId: string;
   name: string;
   morning: boolean;
   afternoon: boolean;
   evening: boolean;
   pillsRemaining: number;
-  patientIds: string[];
 }
 
 export const medsColRef = (uid: string) =>
   collection(db, `users/${uid}/medications`);
 
-export function listenMeds(uid: string, cb: (meds: Medication[]) => void) {
+export const patientMedsColRef = (uid: string, patientId: string) =>
+  collection(db, `users/${uid}/patients/${patientId}/medications`);
+
+export function listenMeds(
+  uid: string,
+  cb: (meds: MedicationGlobal[]) => void
+) {
   return onSnapshot(
     medsColRef(uid),
     (snapshot: QuerySnapshot<DocumentData>) => {
-      const meds: Medication[] = snapshot.docs.map((d) => ({
+      const meds: MedicationGlobal[] = snapshot.docs.map((d) => ({
         id: d.id,
-        ...(d.data() as Omit<Medication, 'id'>),
+        ...(d.data() as Omit<MedicationGlobal, 'id'>),
       }));
       cb(meds);
     }
   );
 }
 
-export async function getMeds(uid: string): Promise<Medication[]> {
+export async function getMeds(uid: string): Promise<MedicationGlobal[]> {
   const snapshot = await getDocs(medsColRef(uid));
   return snapshot.docs.map((d) => ({
     id: d.id,
-    ...(d.data() as Omit<Medication, 'id'>),
+    ...(d.data() as Omit<MedicationGlobal, 'id'>),
   }));
 }
 
 export async function addMedication(
   uid: string,
-  medication: Omit<Medication, 'id'>
+  medication: Omit<MedicationGlobal, 'id'>
 ): Promise<string> {
-  const payload = { ...medication, patientIds: [] };
-  const ref = await addDoc(medsColRef(uid), payload);
+  const ref = await addDoc(medsColRef(uid), medication);
   return ref.id;
 }
 
@@ -61,26 +71,7 @@ export async function deleteMedication(
   uid: string,
   medicationId: string
 ): Promise<void> {
-  const medRef = doc(medsColRef(uid), medicationId);
-  await deleteDoc(medRef);
-}
-
-export async function assignPatientToMedication(
-  uid: string,
-  medicationId: string,
-  patientId: string
-): Promise<void> {
-  const medRef = doc(medsColRef(uid), medicationId);
-  await updateDoc(medRef, { patientIds: arrayUnion(patientId) });
-}
-
-export async function unassignPatientFromMedication(
-  uid: string,
-  medicationId: string,
-  patientId: string
-): Promise<void> {
-  const medRef = doc(medsColRef(uid), medicationId);
-  await updateDoc(medRef, { patientIds: arrayRemove(patientId) });
+  await deleteDoc(doc(medsColRef(uid), medicationId));
 }
 
 export async function addPills(
@@ -89,14 +80,84 @@ export async function addPills(
   delta: number
 ): Promise<void> {
   const medRef = doc(medsColRef(uid), medicationId);
-  await updateDoc(medRef, { pillsRemaining: increment(delta) });
+
+  const snap = await getDoc(medRef);
+  if (!snap.exists()) return;
+
+  const current = snap.data().pillsRemaining || 0;
+  const newValue = current + delta;
+
+  if (newValue < 0) {
+    return;
+  }
+
+  await updateDoc(medRef, { pillsRemaining: newValue });
 }
 
-export async function toggleMedicationTime(
+export function listenPatientMeds(
   uid: string,
-  medicationId: string,
-  time: 'morning' | 'afternoon' | 'evening'
+  patientId: string,
+  cb: (meds: PatientMedication[]) => void
+) {
+  return onSnapshot(
+    patientMedsColRef(uid, patientId),
+    (snapshot: QuerySnapshot<DocumentData>) => {
+      const meds: PatientMedication[] = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<PatientMedication, 'id'>),
+      }));
+      cb(meds);
+    }
+  );
+}
+
+export async function assignMedicationToPatient(
+  uid: string,
+  patientId: string,
+  med: MedicationGlobal
+): Promise<string> {
+  const ref = await addDoc(patientMedsColRef(uid, patientId), {
+    medicationId: med.id,
+    name: med.name,
+    morning: false,
+    afternoon: false,
+    evening: false,
+    pillsRemaining: 0,
+  });
+  return ref.id;
+}
+
+export async function unassignMedicationFromPatient(
+  uid: string,
+  patientId: string,
+  patientMedId: string
 ): Promise<void> {
-  const medRef = doc(medsColRef(uid), medicationId);
-  await updateDoc(medRef, { [time]: increment(1) });
+  await deleteDoc(
+    doc(db, `users/${uid}/patients/${patientId}/medications/${patientMedId}`)
+  );
+}
+
+export async function togglePatientMedicationTime(
+  uid: string,
+  patientId: string,
+  patientMedId: string,
+  time: 'morning' | 'afternoon' | 'evening',
+  nextValue: boolean
+): Promise<void> {
+  await updateDoc(
+    doc(db, `users/${uid}/patients/${patientId}/medications/${patientMedId}`),
+    { [time]: nextValue }
+  );
+}
+
+export async function addPillsToPatientMed(
+  uid: string,
+  patientId: string,
+  patientMedId: string,
+  delta: number
+): Promise<void> {
+  await updateDoc(
+    doc(db, `users/${uid}/patients/${patientId}/medications/${patientMedId}`),
+    { pillsRemaining: increment(delta) }
+  );
 }
