@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Plus,
   Trash2,
@@ -12,8 +12,19 @@ import {
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+
 import { db } from '../firebase';
-import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  onSnapshot,
+  updateDoc,
+  addDoc,
+  deleteDoc,
+  doc,
+  increment,
+  arrayUnion,
+  arrayRemove,
+} from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
 
 type Page = 'patients' | 'medications';
@@ -27,6 +38,7 @@ interface Medication {
   afternoon: boolean;
   evening: boolean;
   pillsRemaining: number;
+  patientIds: string[];
 }
 
 interface Patient {
@@ -47,60 +59,24 @@ interface AggregatedMedication {
 const MedicationSystem = () => {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>('patients');
-  const [patients, setPatients] = useState<Patient[]>([
-    {
-      id: '1',
-      name: 'Иванов И.И.',
-      medications: [
-        {
-          id: '1',
-          name: 'Аспирин',
-          morning: true,
-          afternoon: false,
-          evening: true,
-          pillsRemaining: 45,
-        },
-        {
-          id: '2',
-          name: 'Витамин D',
-          morning: true,
-          afternoon: false,
-          evening: false,
-          pillsRemaining: 12,
-        },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Петрова А.С.',
-      medications: [
-        {
-          id: '3',
-          name: 'Омега-3',
-          morning: true,
-          afternoon: true,
-          evening: false,
-          pillsRemaining: 28,
-        },
-        {
-          id: '4',
-          name: 'Магний',
-          morning: false,
-          afternoon: false,
-          evening: true,
-          pillsRemaining: 8,
-        },
-        {
-          id: '5',
-          name: 'Кальций',
-          morning: true,
-          afternoon: false,
-          evening: true,
-          pillsRemaining: 35,
-        },
-      ],
-    },
-  ]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const unsub = onSnapshot(
+      collection(db, `users/${user.uid}/patients`),
+      (snapshot) => {
+        const loadedPatients: Patient[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Patient, 'id'>),
+        }));
+        setPatients(loadedPatients);
+      }
+    );
+
+    return () => unsub();
+  }, [user]);
 
   const [newPatientName, setNewPatientName] = useState<string>('');
   const [newMedication, setNewMedication] = useState<string>('');
@@ -108,21 +84,66 @@ const MedicationSystem = () => {
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
+  const [patientsFS, setPatientsFS] = useState<Patient[]>([]);
 
   useEffect(() => {
     if (!user) return;
     const unsub = onSnapshot(
       collection(db, `users/${user.uid}/medications`),
       (snapshot) => {
-        const medications: Medication[] = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Medication, 'id'>),
-        }));
+        const medications: Medication[] = snapshot.docs.map((d) => {
+          const data = d.data() as Omit<Medication, 'id'>;
+          return {
+            id: d.id,
+            ...data,
+            patientIds: Array.isArray((data as any).patientIds)
+              ? data.patientIds
+              : [],
+          };
+        });
         setMedsFS(medications);
       }
     );
     return () => unsub();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = onSnapshot(
+      collection(db, `users/${user.uid}/patients`),
+      (snapshot) => {
+        const patients: Patient[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Patient, 'id'>),
+        }));
+        setPatientsFS(patients);
+      }
+    );
   }, [user]);
+
+  const patientNameById = useMemo(() => {
+    return patientsFS.reduce(
+      (acc, patient) => {
+        acc[patient.id] = patient.name;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+  }, [patientsFS]);
+
+  const medsByPatient = useMemo(() => {
+    const map: Record<string, Medication[]> = {};
+    for (const p of patientsFS) map[p.id] = [];
+    for (const m of medsFS) {
+      if (Array.isArray(m.patientIds)) {
+        for (const pid of m.patientIds) {
+          if (!map[pid]) map[pid] = [];
+          map[pid].push(m);
+        }
+      }
+    }
+    return map;
+  }, [patientsFS, medsFS]);
 
   const todayISO = () => {
     const d = new Date();
@@ -173,46 +194,63 @@ const MedicationSystem = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const addPatient = (): void => {
-    if (newPatientName.trim()) {
-      const newPatient: Patient = {
-        id: Date.now().toString(),
-        name: newPatientName,
-        medications: [],
-      };
-      setPatients((prev) => [...prev, newPatient]);
-      setNewPatientName('');
-    }
+  const addPatient = async (): Promise<void> => {
+    if (!user || !newPatientName.trim()) return;
+
+    await addDoc(collection(db, `users/${user.uid}/patients`), {
+      name: newPatientName,
+      medications: [],
+    });
+
+    setNewPatientName('');
   };
 
-  const addMedication = (patientId: string): void => {
-    if (newMedication.trim() && newMedicationPills) {
-      setPatients((prev) =>
-        prev.map((patient) =>
-          patient.id === patientId
-            ? {
-                ...patient,
-                medications: [
-                  ...patient.medications,
-                  {
-                    id: Date.now().toString(),
-                    name: newMedication,
-                    morning: false,
-                    afternoon: false,
-                    evening: false,
-                    pillsRemaining: parseInt(newMedicationPills, 10),
-                  },
-                ],
-              }
-            : patient
-        )
-      );
-      setNewMedication('');
-      setNewMedicationPills('');
-    }
+  const removePatient = async (patientId: string): Promise<void> => {
+    if (!user) return;
+
+    await deleteDoc(doc(db, `users/${user.uid}/patients/${patientId}`));
   };
 
-  const removeMedication = (patientId: string, medicationId: string): void => {
+  const addMedication = async (patientId: string): Promise<void> => {
+    if (!user) return;
+    if (!newMedication.trim()) return;
+
+    const name = newMedication.trim();
+
+    const existing = medsFS.find(
+      (m) => m.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (existing) {
+      await updateDoc(doc(db, `users/${user.uid}/medications/${existing.id}`), {
+        patientIds: arrayUnion(patientId),
+      });
+    } else {
+      await addDoc(collection(db, `users/${user.uid}/medications`), {
+        name,
+        morning: false,
+        afternoon: false,
+        evening: false,
+        pillsRemaining: 0,
+        patientIds: [patientId],
+      });
+    }
+
+    setNewMedication('');
+    setNewMedicationPills('');
+    setSelectedPatient(patientId);
+  };
+
+  const removeMedication = async (
+    patientId: string,
+    medicationId: string
+  ): Promise<void> => {
+    if (!user) return;
+
+    await updateDoc(doc(db, `users/${user.uid}/medications/${medicationId}`), {
+      patientIds: arrayRemove(patientId),
+    });
+
     setPatients((prev) =>
       prev.map((patient) =>
         patient.id === patientId
@@ -246,10 +284,6 @@ const MedicationSystem = () => {
           : patient
       )
     );
-  };
-
-  const removePatient = (patientId: string): void => {
-    setPatients((prev) => prev.filter((patient) => patient.id !== patientId));
   };
 
   const getScheduleText = (medication: Medication): string => {
@@ -288,7 +322,7 @@ const MedicationSystem = () => {
         id: m.id,
         name: m.name,
         totalPills: pills === Infinity ? 0 : (pills as number),
-        patients: [],
+        patients: m.patientIds || [],
         dailyConsumption: daily,
         daysRemaining: days,
       };
@@ -300,12 +334,12 @@ const MedicationSystem = () => {
     return daily * 30;
   };
 
-  const updatePillCount = async (id: string, newCount: string) => {
+  const updatePillCount = async (id: string, deltaStr: string) => {
     if (!user) return;
-    const n = parseInt(newCount, 10);
-    if (Number.isNaN(n)) return;
+    const delta = parseInt(deltaStr, 10);
+    if (Number.isNaN(delta) || delta <= 0) return;
     await updateDoc(doc(db, `users/${user.uid}/medications/${id}`), {
-      pillsRemaining: n,
+      pillsRemaining: increment(delta),
     });
   };
 
@@ -380,6 +414,7 @@ const MedicationSystem = () => {
         <div className="flex gap-3">
           <input
             type="text"
+            name="patientName"
             placeholder="ПІБ пацієнта"
             value={newPatientName}
             onChange={(e) => setNewPatientName(e.target.value)}
@@ -452,7 +487,7 @@ const MedicationSystem = () => {
 
             {/* Список препаратов */}
             <div className="space-y-3">
-              {patient.medications.map((medication) => {
+              {(medsByPatient[patient.id] || []).map((medication) => {
                 const daysRemaining = getDaysRemaining(medication);
                 const warningLevel = getWarningLevel(daysRemaining);
 
@@ -496,11 +531,13 @@ const MedicationSystem = () => {
                           )}
                         </div>
                       </div>
+
                       <button
                         onClick={() =>
                           removeMedication(patient.id, medication.id)
                         }
                         className="text-red-500 hover:text-red-700 p-1"
+                        title="Відвʼязати від пацієнта"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -530,13 +567,15 @@ const MedicationSystem = () => {
                               <input
                                 type="checkbox"
                                 checked={medication[time]}
-                                onChange={() =>
-                                  toggleSchedule(
-                                    patient.id,
-                                    medication.id,
-                                    time
-                                  )
-                                }
+                                onChange={() => {
+                                  updateDoc(
+                                    doc(
+                                      db,
+                                      `users/${user!.uid}/medications/${medication.id}`
+                                    ),
+                                    { [time]: !medication[time] }
+                                  );
+                                }}
                                 className="sr-only"
                               />
                               <div
@@ -568,7 +607,8 @@ const MedicationSystem = () => {
                 );
               })}
 
-              {patient.medications.length === 0 && (
+              {(!medsByPatient[patient.id] ||
+                medsByPatient[patient.id].length === 0) && (
                 <div className="text-gray-500 text-center py-4 italic">
                   Препарати не призначені
                 </div>
@@ -728,7 +768,10 @@ const MedicationSystem = () => {
                           : medication.daysRemaining}
                       </td>
                       <td className="p-3 text-sm text-gray-600">
-                        {medication.patients.join(', ')}
+                        {medication.patients
+                          .map((pid) => patientNameById[pid])
+                          .filter(Boolean)
+                          .join(', ') || ''}
                       </td>
                       <td className="p-3">
                         <span
