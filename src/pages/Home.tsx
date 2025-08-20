@@ -9,6 +9,12 @@ import {
   Calendar,
   AlertTriangle,
   Package,
+  History,
+  ShoppingCart,
+  Edit3,
+  Filter,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -29,9 +35,10 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { PatientMedication } from '../services/userMeds';
 
-type Page = 'patients' | 'medications';
+type Page = 'patients' | 'medications' | 'history';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 type WarningLevel = 'critical' | 'warning' | 'normal';
+type HistoryAction = 'purchase' | 'consumption' | 'adjustment' | 'prescription';
 
 interface Medication {
   id: string;
@@ -53,6 +60,17 @@ interface AggregatedMedication {
   patients: string[];
   dailyConsumption: number;
   daysRemaining: number;
+}
+
+interface HistoryRecord {
+  id: string;
+  date: Date;
+  action: HistoryAction;
+  medicationName: string;
+  patientName?: string;
+  quantity: number;
+  remainingAfter: number;
+  notes?: string;
 }
 
 const MedicationSystem = () => {
@@ -84,6 +102,46 @@ const MedicationSystem = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
   const [patientsFS, setPatientsFS] = useState<Patient[]>([]);
+  const [historyRecords] = useState<HistoryRecord[]>([
+    {
+      id: '1',
+      date: new Date('2025-08-19'),
+      action: 'purchase',
+      medicationName: 'Аспірин',
+      quantity: 100,
+      remainingAfter: 145,
+      notes: 'Поповнення',
+    },
+    {
+      id: '2',
+      date: new Date('2025-08-18'),
+      action: 'consumption',
+      medicationName: 'Аспірин',
+      patientName: 'Іванов І.І.',
+      quantity: -2,
+      remainingAfter: 45,
+      notes: 'Вранці та ввечері',
+    },
+    {
+      id: '3',
+      date: new Date('2025-08-17'),
+      action: 'prescription',
+      medicationName: 'Вітамін D',
+      patientName: 'Петрова А.С.',
+      quantity: 30,
+      remainingAfter: 30,
+      notes: '1 раз вранці',
+    },
+    {
+      id: '4',
+      date: new Date('2025-08-16'),
+      action: 'adjustment',
+      medicationName: 'Омега-3',
+      quantity: -5,
+      remainingAfter: 23,
+      notes: 'Інвентаризація',
+    },
+  ]);
 
   const [assignByPatient, setAssignByPatient] = useState<
     Record<string, Record<string, PatientMedication>>
@@ -443,6 +501,79 @@ const MedicationSystem = () => {
     }
   };
 
+  const [historyDateRange, setHistoryDateRange] = useState({
+    start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    end: new Date(),
+  });
+  const [historyActionFilter, setHistoryActionFilter] = useState<
+    HistoryAction | 'all'
+  >('all');
+  const [historySearch, setHistorySearch] = useState('');
+
+  // унікальні утиліти, щоб не конфліктувати з вашими
+  const formatHistoryDateTime = (date: Date): string =>
+    date.toLocaleDateString('uk-UA', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+  const getHistoryActionIcon = (action: HistoryAction) => {
+    switch (action) {
+      case 'purchase':
+        return <ShoppingCart className="w-4 h-4" />;
+      case 'consumption':
+        return <Pill className="w-4 h-4" />;
+      case 'adjustment':
+        return <Edit3 className="w-4 h-4" />;
+      case 'prescription':
+        return <User className="w-4 h-4" />;
+    }
+  };
+
+  const getHistoryActionColor = (action: HistoryAction) => {
+    switch (action) {
+      case 'purchase':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'consumption':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'adjustment':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'prescription':
+        return 'bg-purple-100 text-purple-800 border-purple-300';
+    }
+  };
+
+  const getHistoryActionText = (action: HistoryAction) => {
+    switch (action) {
+      case 'purchase':
+        return 'Покупка';
+      case 'consumption':
+        return 'Споживання';
+      case 'adjustment':
+        return 'Корекція';
+      case 'prescription':
+        return 'Призначення';
+    }
+  };
+
+  const filteredHistoryRecords = useMemo(() => {
+    return historyRecords.filter((r) => {
+      const inRange =
+        r.date >= historyDateRange.start && r.date <= historyDateRange.end;
+      const actionOK =
+        historyActionFilter === 'all' || r.action === historyActionFilter;
+      const term = historySearch.trim().toLowerCase();
+      const searchOK =
+        !term ||
+        r.medicationName.toLowerCase().includes(term) ||
+        (r.patientName && r.patientName.toLowerCase().includes(term));
+      return inRange && actionOK && searchOK;
+    });
+  }, [historyRecords, historyDateRange, historyActionFilter, historySearch]);
+
   const Header = () => (
     <div className="bg-white shadow-lg mb-6">
       <div className="max-w-6xl mx-auto px-6 py-4">
@@ -472,6 +603,17 @@ const MedicationSystem = () => {
           >
             <Package className="w-4 h-4 inline-block mr-2" />
             Препарати
+          </button>
+          <button
+            onClick={() => setCurrentPage('history')}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              currentPage === 'history'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <History className="w-4 h-4 inline-block mr-2" />
+            Історія
           </button>
         </nav>
       </div>
@@ -889,11 +1031,230 @@ const MedicationSystem = () => {
     );
   };
 
+  const HistoryPage = () => (
+    <div className="space-y-6">
+      {/* Фільтри */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <Filter className="w-5 h-5 mr-2 text-blue-600" />
+          Фільтри
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Пошук */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Пошук
+            </label>
+            <input
+              type="text"
+              placeholder="Препарат або пацієнт..."
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+              className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Тип дії */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Тип дії
+            </label>
+            <select
+              value={historyActionFilter}
+              onChange={(e) =>
+                setHistoryActionFilter(e.target.value as HistoryAction | 'all')
+              }
+              className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">Всі дії</option>
+              <option value="purchase">Покупка</option>
+              <option value="consumption">Споживання</option>
+              <option value="prescription">Призначення</option>
+              <option value="adjustment">Корекція</option>
+            </select>
+          </div>
+
+          {/* Період */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Період
+            </label>
+            <div className="space-y-2">
+              <input
+                type="date"
+                value={historyDateRange.start.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const d = new Date(e.target.value);
+                  if (!isNaN(d.getTime()))
+                    setHistoryDateRange((prev) => ({ ...prev, start: d }));
+                }}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+              <input
+                type="date"
+                value={historyDateRange.end.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const d = new Date(e.target.value);
+                  if (!isNaN(d.getTime()))
+                    setHistoryDateRange((prev) => ({ ...prev, end: d }));
+                }}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Швидкий вибір періоду */}
+      <div className="bg-white rounded-lg shadow-lg p-4">
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm font-medium text-gray-700 mr-2 self-center">
+            Швидкий вибір:
+          </span>
+          {[
+            { label: 'Сьогодні', days: 0 },
+            { label: 'Тиждень', days: 7 },
+            { label: 'Місяць', days: 30 },
+            { label: '3 місяці', days: 90 },
+          ].map((p) => (
+            <button
+              key={p.label}
+              onClick={() => {
+                const end = new Date();
+                const start = new Date();
+                start.setDate(start.getDate() - p.days);
+                setHistoryDateRange({ start, end });
+              }}
+              className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Заголовок + лічильник */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
+            <History className="w-6 h-6 mr-2 text-green-600" />
+            Історія операцій
+          </h2>
+          <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            Знайдено записів: {filteredHistoryRecords.length}
+          </div>
+        </div>
+
+        {/* Список записів */}
+        <div className="space-y-4">
+          {filteredHistoryRecords.map((r) => (
+            <div
+              key={r.id}
+              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`p-2 rounded-full border ${getHistoryActionColor(r.action)}`}
+                  >
+                    {getHistoryActionIcon(r.action)}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-gray-800">
+                      {r.medicationName}
+                    </h3>
+                    <p className="text-sm text-gray-600 flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {formatHistoryDateTime(r.date)}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`px-3 py-1 rounded-full text-sm font-medium border ${getHistoryActionColor(r.action)}`}
+                >
+                  {getHistoryActionText(r.action)}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-600">
+                    Кількість:
+                  </span>
+                  <div className="flex items-center">
+                    {r.quantity > 0 ? (
+                      <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`font-semibold ${r.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    >
+                      {r.quantity > 0 ? '+' : ''}
+                      {r.quantity} таб.
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-600">
+                    Залишок після:
+                  </span>
+                  <p className="font-semibold text-blue-600 flex items-center">
+                    <Package className="w-3 h-3 mr-1" />
+                    {r.remainingAfter} таб.
+                  </p>
+                </div>
+                {r.patientName && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">
+                      Пацієнт:
+                    </span>
+                    <p className="font-semibold text-gray-800 flex items-center">
+                      <User className="w-3 h-3 mr-1" />
+                      {r.patientName}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {r.notes && (
+                <div className="bg-gray-50 p-3 rounded-md border-l-4 border-blue-200">
+                  <div className="flex items-start">
+                    <AlertTriangle className="w-4 h-4 mr-2 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">
+                        Примітки:
+                      </span>
+                      <p className="text-sm text-gray-700 mt-1">{r.notes}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {filteredHistoryRecords.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <History className="w-20 h-20 mx-auto mb-4 text-gray-300" />
+            <p className="text-lg mb-2">Записи не знайдені</p>
+            <p className="text-sm">
+              Спробуйте змінити фільтри або розширити період пошуку
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
       <div className="max-w-6xl mx-auto px-6 pb-6">
-        {currentPage === 'patients' ? <PatientsPage /> : <MedicationsPage />}
+        {currentPage === 'patients' && <PatientsPage />}
+        {currentPage === 'medications' && <MedicationsPage />}
+        {currentPage === 'history' && <HistoryPage />}
       </div>
     </div>
   );
