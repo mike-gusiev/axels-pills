@@ -9,9 +9,22 @@ import {
   Calendar,
   AlertTriangle,
   Package,
+  History,
+  ShoppingCart,
+  Edit3,
+  Filter,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import {
+  subscribePurchases,
+  addPurchase,
+  updatePurchase,
+  deletePurchase,
+  type Purchase,
+} from '../services/userHistory';
 
 import { db } from '../firebase';
 import {
@@ -29,9 +42,10 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { PatientMedication } from '../services/userMeds';
 
-type Page = 'patients' | 'medications';
+type Page = 'patients' | 'medications' | 'history';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 type WarningLevel = 'critical' | 'warning' | 'normal';
+type HistoryAction = 'purchase' | 'consumption' | 'adjustment' | 'prescription';
 
 interface Medication {
   id: string;
@@ -85,9 +99,31 @@ const MedicationSystem = () => {
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
   const [patientsFS, setPatientsFS] = useState<Patient[]>([]);
 
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [editing, setEditing] = useState<Purchase | null>(null);
+  const [loadingPurchases, setLoadingPurchases] = useState(false);
+  const [editBuff, setEditBuff] = useState<{ quantity: number; notes: string }>(
+    {
+      quantity: 0,
+      notes: '',
+    }
+  );
+
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const [assignByPatient, setAssignByPatient] = useState<
     Record<string, Record<string, PatientMedication>>
   >({});
+
+  const [buyQty, setBuyQty] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+  const showToast = (msg: string) => {
+    setToast({ open: true, message: msg });
+    setTimeout(() => setToast({ open: false, message: '' }), 2000);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -97,7 +133,6 @@ const MedicationSystem = () => {
     const unsubPatients = onSnapshot(
       collection(db, `users/${user.uid}/patients`),
       (snap) => {
-        // скидаємо старі підписки
         unsubs.forEach((u) => u());
         unsubs.length = 0;
 
@@ -167,6 +202,16 @@ const MedicationSystem = () => {
     );
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    setLoadingPurchases(true);
+    const unsub = subscribePurchases(user.uid, (items) => {
+      setPurchases(items);
+      setLoadingPurchases(false);
+    });
+    return unsub;
+  }, [user]);
+
   const patientNameById = useMemo(() => {
     return patientsFS.reduce(
       (acc, patient) => {
@@ -231,14 +276,6 @@ const MedicationSystem = () => {
     return Math.max(0, projected);
   };
 
-  const daysRemainingAt = (m: PatientMedication, asOfISO: string): number => {
-    const daily = dailyFor(m);
-    if (!daily) return Infinity;
-    const pills = pillsAtDate(m, asOfISO);
-    if (pills === Infinity) return Infinity;
-    return Math.floor(pills / daily);
-  };
-
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDate(new Date());
@@ -269,6 +306,8 @@ const MedicationSystem = () => {
     if (!newMedication.trim()) return;
 
     const name = newMedication.trim();
+    const qty = parseInt(newMedicationPills || '0', 10) || 0;
+
     const existing = medsFS.find(
       (m) => m.name.toLowerCase() === name.toLowerCase()
     );
@@ -277,15 +316,29 @@ const MedicationSystem = () => {
 
     if (existing) {
       medId = existing.id;
+
       await updateDoc(doc(db, `users/${user.uid}/medications/${medId}`), {
         patientIds: arrayUnion(patientId),
       });
+
+      if (qty > 0) {
+        await updateDoc(doc(db, `users/${user.uid}/medications/${medId}`), {
+          pillsRemaining: increment(qty),
+        });
+
+        await addPurchase(user.uid, {
+          medicationId: medId,
+          medicationName: existing.name,
+          quantity: qty,
+          notes: 'Поповнення при прив’язці до пацієнта',
+        });
+      }
     } else {
       const created = await addDoc(
         collection(db, `users/${user.uid}/medications`),
         {
           name,
-          pillsRemaining: 0,
+          pillsRemaining: qty,
           patientIds: [patientId],
         }
       );
@@ -299,6 +352,8 @@ const MedicationSystem = () => {
     );
 
     setSelectedPatient(patientId);
+    setNewMedication('');
+    setNewMedicationPills('');
   };
 
   const removeMedication = async (patientId: string, medicationId: string) => {
@@ -315,27 +370,6 @@ const MedicationSystem = () => {
         )
       ),
     ]);
-  };
-
-  const toggleSchedule = (
-    patientId: string,
-    medicationId: string,
-    timeOfDay: TimeOfDay
-  ): void => {
-    setPatients((prev) =>
-      prev.map((patient) =>
-        patient.id === patientId
-          ? {
-              ...patient,
-              medications: patient.medications.map((med) =>
-                med.id === medicationId
-                  ? { ...med, [timeOfDay]: !med[timeOfDay] }
-                  : med
-              ),
-            }
-          : patient
-      )
-    );
   };
 
   const getScheduleText = (medication: PatientMedication): string => {
@@ -408,13 +442,25 @@ const MedicationSystem = () => {
     return daily * 30;
   };
 
-  const updatePillCount = async (id: string, deltaStr: string) => {
+  const handleAddPurchase = async (
+    med: { id: string; name: string },
+    value: string
+  ) => {
     if (!user) return;
-    const delta = parseInt(deltaStr, 10);
-    if (Number.isNaN(delta) || delta <= 0) return;
-    await updateDoc(doc(db, `users/${user.uid}/medications/${id}`), {
-      pillsRemaining: increment(delta),
-    });
+    const q = parseInt(value, 10);
+    if (!q || q <= 0) return;
+
+    try {
+      await addPurchase(user.uid, {
+        medicationId: med.id,
+        medicationName: med.name,
+        quantity: q,
+        notes: '',
+      });
+      showToast(`Додано +${q} таб. до «${med.name}»`);
+    } catch (e: any) {
+      alert(e?.message ?? 'Не вдалося додати кількість');
+    }
   };
 
   const formatDate = (date: Date | string): string => {
@@ -472,6 +518,17 @@ const MedicationSystem = () => {
           >
             <Package className="w-4 h-4 inline-block mr-2" />
             Препарати
+          </button>
+          <button
+            onClick={() => setCurrentPage('history')}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              currentPage === 'history'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <History className="w-4 h-4 inline-block mr-2" />
+            Історія
           </button>
         </nav>
       </div>
@@ -859,17 +916,48 @@ const MedicationSystem = () => {
                         </span>
                       </td>
                       <td className="p-3">
-                        <input
-                          type="number"
-                          placeholder="Нова кількість"
-                          onChange={(e) =>
-                            updatePillCount(
-                              medication.id as string,
-                              e.target.value
-                            )
-                          }
-                          className="w-24 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
-                        />
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            placeholder="Купили (таб.)"
+                            value={buyQty[medication.id as string] ?? ''}
+                            onChange={(e) =>
+                              setBuyQty((prev) => ({
+                                ...prev,
+                                [medication.id as string]: e.target.value,
+                              }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const id = medication.id as string;
+                                const val = buyQty[id];
+                                if (!val) return;
+                                handleAddPurchase(
+                                  { id, name: medication.name },
+                                  val
+                                );
+                                setBuyQty((prev) => ({ ...prev, [id]: '' }));
+                              }
+                            }}
+                            className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            onClick={() => {
+                              const id = medication.id as string;
+                              const val = buyQty[id];
+                              if (!val) return;
+                              handleAddPurchase(
+                                { id, name: medication.name },
+                                val
+                              );
+                              setBuyQty((prev) => ({ ...prev, [id]: '' }));
+                            }}
+                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                            title="Додати"
+                          >
+                            +
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -889,12 +977,182 @@ const MedicationSystem = () => {
     );
   };
 
+  const HistoryPage = () => {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
+              <History className="w-6 h-6 mr-2 text-green-600" />
+              Історія операцій
+            </h2>
+            <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+              Знайдено записів: {purchases.length}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {purchases.map((p) => (
+              <div key={p.id} className="border rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="font-semibold text-lg">
+                      {p.medicationName}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {new Date(p.timestamp).toLocaleString('uk-UA')}
+                    </div>
+
+                    {editing?.id === p.id ? (
+                      <div className="mt-3 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-gray-600">
+                            Кількість:
+                          </label>
+                          <input
+                            type="number"
+                            value={editBuff.quantity}
+                            onChange={(e) =>
+                              setEditBuff((prev) => ({
+                                ...prev,
+                                quantity:
+                                  parseInt(e.target.value || '0', 10) || 0,
+                              }))
+                            }
+                            className="w-28 p-1 text-sm border rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">
+                            Примітки:
+                          </label>
+                          <input
+                            type="text"
+                            value={editBuff.notes}
+                            onChange={(e) =>
+                              setEditBuff((prev) => ({
+                                ...prev,
+                                notes: e.target.value,
+                              }))
+                            }
+                            className="w-full p-2 text-sm border rounded"
+                            placeholder="Додайте примітку…"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            disabled={savingEdit}
+                            onClick={async () => {
+                              if (!user) return;
+                              if (editBuff.quantity < 0) {
+                                alert('Кількість не може бути від’ємною');
+                                return;
+                              }
+                              try {
+                                setSavingEdit(true);
+                                await updatePurchase(user.uid, p, {
+                                  quantity: editBuff.quantity,
+                                  notes: editBuff.notes,
+                                });
+                                setEditing(null);
+                              } catch (err: any) {
+                                alert(err?.message ?? 'Помилка збереження');
+                              } finally {
+                                setSavingEdit(false);
+                              }
+                            }}
+                            className="px-3 py-1 text-sm bg-green-600 text-white rounded disabled:opacity-60"
+                          >
+                            Зберегти
+                          </button>
+                          <button
+                            disabled={savingEdit}
+                            onClick={() => setEditing(null)}
+                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded"
+                          >
+                            Скасувати
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-600">
+                            Кількість:{' '}
+                          </span>
+                          <span className="font-semibold text-green-700">
+                            +{p.quantity}
+                          </span>
+                        </div>
+                        {p.notes && (
+                          <div className="text-sm text-gray-700 mt-1">
+                            Примітки: {p.notes}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 ml-4">
+                    {editing?.id === p.id ? null : (
+                      <button
+                        onClick={() => {
+                          setEditing(p);
+                          setEditBuff({
+                            quantity: p.quantity,
+                            notes: p.notes ?? '',
+                          });
+                        }}
+                        className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
+                      >
+                        Редагувати
+                      </button>
+                    )}
+                    <button
+                      onClick={async () => {
+                        if (!user) return;
+                        if (
+                          confirm(
+                            'Видалити покупку? Склад буде зменшено на цю кількість.'
+                          )
+                        ) {
+                          try {
+                            await deletePurchase(user.uid, p);
+                            if (editing?.id === p.id) setEditing(null);
+                          } catch (err: any) {
+                            alert(err?.message ?? 'Помилка видалення');
+                          }
+                        }
+                      }}
+                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
+                    >
+                      Видалити
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
       <div className="max-w-6xl mx-auto px-6 pb-6">
-        {currentPage === 'patients' ? <PatientsPage /> : <MedicationsPage />}
+        {currentPage === 'patients' && PatientsPage()}
+        {currentPage === 'medications' && MedicationsPage()}
+        {currentPage === 'history' && HistoryPage()}
       </div>
+
+      {toast.open && (
+        <div className="fixed bottom-4 right-4 z-50 bg-green-600 text-white text-sm px-4 py-2 rounded shadow-lg">
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 };
