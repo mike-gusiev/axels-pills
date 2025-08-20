@@ -115,6 +115,16 @@ const MedicationSystem = () => {
     Record<string, Record<string, PatientMedication>>
   >({});
 
+  const [buyQty, setBuyQty] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+  const showToast = (msg: string) => {
+    setToast({ open: true, message: msg });
+    setTimeout(() => setToast({ open: false, message: '' }), 2000);
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -440,12 +450,17 @@ const MedicationSystem = () => {
     const q = parseInt(value, 10);
     if (!q || q <= 0) return;
 
-    await addPurchase(user.uid, {
-      medicationId: med.id,
-      medicationName: med.name,
-      quantity: q,
-      notes: '',
-    });
+    try {
+      await addPurchase(user.uid, {
+        medicationId: med.id,
+        medicationName: med.name,
+        quantity: q,
+        notes: '',
+      });
+      showToast(`Додано +${q} таб. до «${med.name}»`);
+    } catch (e: any) {
+      alert(e?.message ?? 'Не вдалося додати кількість');
+    }
   };
 
   const formatDate = (date: Date | string): string => {
@@ -471,64 +486,6 @@ const MedicationSystem = () => {
         return 'bg-yellow-100 border-yellow-300 text-yellow-800';
       default:
         return 'bg-green-100 border-green-300 text-green-800';
-    }
-  };
-
-  const [historyDateRange, setHistoryDateRange] = useState({
-    start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    end: new Date(),
-  });
-  const [historyActionFilter, setHistoryActionFilter] = useState<
-    HistoryAction | 'all'
-  >('all');
-  const [historySearch, setHistorySearch] = useState('');
-
-  // унікальні утиліти, щоб не конфліктувати з вашими
-  const formatHistoryDateTime = (date: Date): string =>
-    date.toLocaleDateString('uk-UA', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-  const getHistoryActionIcon = (action: HistoryAction) => {
-    switch (action) {
-      case 'purchase':
-        return <ShoppingCart className="w-4 h-4" />;
-      case 'consumption':
-        return <Pill className="w-4 h-4" />;
-      case 'adjustment':
-        return <Edit3 className="w-4 h-4" />;
-      case 'prescription':
-        return <User className="w-4 h-4" />;
-    }
-  };
-
-  const getHistoryActionColor = (action: HistoryAction) => {
-    switch (action) {
-      case 'purchase':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'consumption':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'adjustment':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'prescription':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-    }
-  };
-
-  const getHistoryActionText = (action: HistoryAction) => {
-    switch (action) {
-      case 'purchase':
-        return 'Покупка';
-      case 'consumption':
-        return 'Споживання';
-      case 'adjustment':
-        return 'Корекція';
-      case 'prescription':
-        return 'Призначення';
     }
   };
 
@@ -959,24 +916,48 @@ const MedicationSystem = () => {
                         </span>
                       </td>
                       <td className="p-3">
-                        <input
-                          type="number"
-                          placeholder="Купили (таб.)"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              const val = (e.target as HTMLInputElement).value;
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            placeholder="Купили (таб.)"
+                            value={buyQty[medication.id as string] ?? ''}
+                            onChange={(e) =>
+                              setBuyQty((prev) => ({
+                                ...prev,
+                                [medication.id as string]: e.target.value,
+                              }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const id = medication.id as string;
+                                const val = buyQty[id];
+                                if (!val) return;
+                                handleAddPurchase(
+                                  { id, name: medication.name },
+                                  val
+                                );
+                                setBuyQty((prev) => ({ ...prev, [id]: '' }));
+                              }
+                            }}
+                            className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            onClick={() => {
+                              const id = medication.id as string;
+                              const val = buyQty[id];
+                              if (!val) return;
                               handleAddPurchase(
-                                {
-                                  id: medication.id as string,
-                                  name: medication.name,
-                                },
+                                { id, name: medication.name },
                                 val
                               );
-                              (e.target as HTMLInputElement).value = '';
-                            }
-                          }}
-                          className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
-                        />
+                              setBuyQty((prev) => ({ ...prev, [id]: '' }));
+                            }}
+                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                            title="Додати"
+                          >
+                            +
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -999,7 +980,6 @@ const MedicationSystem = () => {
   const HistoryPage = () => {
     return (
       <div className="space-y-6">
-        {/* блок фільтрів можете лишити як був; просто використовуйте history для відображення */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
@@ -1015,35 +995,120 @@ const MedicationSystem = () => {
             {purchases.map((p) => (
               <div key={p.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <div className="font-semibold text-lg">
                       {p.medicationName}
                     </div>
                     <div className="text-sm text-gray-600">
                       {new Date(p.timestamp).toLocaleString('uk-UA')}
                     </div>
-                    <div className="mt-1">
-                      <span className="text-sm text-gray-600">Кількість: </span>
-                      <span className="font-semibold text-green-700">
-                        +{p.quantity}
-                      </span>
-                    </div>
-                    {p.notes && (
-                      <div className="text-sm text-gray-700 mt-1">
-                        Примітки: {p.notes}
+
+                    {editing?.id === p.id ? (
+                      <div className="mt-3 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-gray-600">
+                            Кількість:
+                          </label>
+                          <input
+                            type="number"
+                            value={editBuff.quantity}
+                            onChange={(e) =>
+                              setEditBuff((prev) => ({
+                                ...prev,
+                                quantity:
+                                  parseInt(e.target.value || '0', 10) || 0,
+                              }))
+                            }
+                            className="w-28 p-1 text-sm border rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600 mb-1">
+                            Примітки:
+                          </label>
+                          <input
+                            type="text"
+                            value={editBuff.notes}
+                            onChange={(e) =>
+                              setEditBuff((prev) => ({
+                                ...prev,
+                                notes: e.target.value,
+                              }))
+                            }
+                            className="w-full p-2 text-sm border rounded"
+                            placeholder="Додайте примітку…"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            disabled={savingEdit}
+                            onClick={async () => {
+                              if (!user) return;
+                              if (editBuff.quantity < 0) {
+                                alert('Кількість не може бути від’ємною');
+                                return;
+                              }
+                              try {
+                                setSavingEdit(true);
+                                await updatePurchase(user.uid, p, {
+                                  quantity: editBuff.quantity,
+                                  notes: editBuff.notes,
+                                });
+                                setEditing(null);
+                              } catch (err: any) {
+                                alert(err?.message ?? 'Помилка збереження');
+                              } finally {
+                                setSavingEdit(false);
+                              }
+                            }}
+                            className="px-3 py-1 text-sm bg-green-600 text-white rounded disabled:opacity-60"
+                          >
+                            Зберегти
+                          </button>
+                          <button
+                            disabled={savingEdit}
+                            onClick={() => setEditing(null)}
+                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded"
+                          >
+                            Скасувати
+                          </button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-600">
+                            Кількість:{' '}
+                          </span>
+                          <span className="font-semibold text-green-700">
+                            +{p.quantity}
+                          </span>
+                        </div>
+                        {p.notes && (
+                          <div className="text-sm text-gray-700 mt-1">
+                            Примітки: {p.notes}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setEditing(p);
-                      }}
-                      className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
-                    >
-                      Редагувати
-                    </button>
+                  <div className="flex flex-col sm:flex-row gap-2 ml-4">
+                    {editing?.id === p.id ? null : (
+                      <button
+                        onClick={() => {
+                          setEditing(p);
+                          setEditBuff({
+                            quantity: p.quantity,
+                            notes: p.notes ?? '',
+                          });
+                        }}
+                        className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
+                      >
+                        Редагувати
+                      </button>
+                    )}
                     <button
                       onClick={async () => {
                         if (!user) return;
@@ -1052,7 +1117,12 @@ const MedicationSystem = () => {
                             'Видалити покупку? Склад буде зменшено на цю кількість.'
                           )
                         ) {
-                          await deletePurchase(user.uid, p);
+                          try {
+                            await deletePurchase(user.uid, p);
+                            if (editing?.id === p.id) setEditing(null);
+                          } catch (err: any) {
+                            alert(err?.message ?? 'Помилка видалення');
+                          }
                         }
                       }}
                       className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
@@ -1075,8 +1145,14 @@ const MedicationSystem = () => {
       <div className="max-w-6xl mx-auto px-6 pb-6">
         {currentPage === 'patients' && PatientsPage()}
         {currentPage === 'medications' && MedicationsPage()}
-        {currentPage === 'history' && <HistoryPage />}
+        {currentPage === 'history' && HistoryPage()}
       </div>
+
+      {toast.open && (
+        <div className="fixed bottom-4 right-4 z-50 bg-green-600 text-white text-sm px-4 py-2 rounded shadow-lg">
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 };
