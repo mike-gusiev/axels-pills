@@ -79,8 +79,8 @@ const MedicationSystem = () => {
 
     const unsub = onSnapshot(
       collection(db, `users/${user.uid}/patients`),
-      (snapshot) => {
-        const loadedPatients: Patient[] = snapshot.docs.map((d) => ({
+      snapshot => {
+        const loadedPatients: Patient[] = snapshot.docs.map(d => ({
           id: d.id,
           ...(d.data() as Omit<Patient, 'id'>),
         }));
@@ -132,8 +132,8 @@ const MedicationSystem = () => {
 
     const unsubPatients = onSnapshot(
       collection(db, `users/${user.uid}/patients`),
-      (snap) => {
-        unsubs.forEach((u) => u());
+      snap => {
+        unsubs.forEach(u => u());
         unsubs.length = 0;
 
         const nextAssignMap: Record<
@@ -141,19 +141,19 @@ const MedicationSystem = () => {
           Record<string, PatientMedication>
         > = {};
 
-        snap.docs.forEach((pDoc) => {
+        snap.docs.forEach(pDoc => {
           const pid = pDoc.id;
           const subUnsub = onSnapshot(
             collection(db, `users/${user.uid}/patients/${pid}/medications`),
-            (medSnap) => {
+            medSnap => {
               const inner: Record<string, PatientMedication> = {};
-              medSnap.docs.forEach((mDoc) => {
+              medSnap.docs.forEach(mDoc => {
                 inner[mDoc.id] = {
                   medicationId: mDoc.id,
                   ...(mDoc.data() as Omit<PatientMedication, 'medicationId'>),
                 };
               });
-              setAssignByPatient((prev) => ({ ...prev, [pid]: inner }));
+              setAssignByPatient(prev => ({ ...prev, [pid]: inner }));
             }
           );
           unsubs.push(subUnsub);
@@ -163,7 +163,7 @@ const MedicationSystem = () => {
 
     return () => {
       unsubPatients();
-      unsubs.forEach((u) => u());
+      unsubs.forEach(u => u());
     };
   }, [user]);
 
@@ -171,8 +171,8 @@ const MedicationSystem = () => {
     if (!user) return;
     const unsub = onSnapshot(
       collection(db, `users/${user.uid}/medications`),
-      (snapshot) => {
-        const medications: Medication[] = snapshot.docs.map((d) => {
+      snapshot => {
+        const medications: Medication[] = snapshot.docs.map(d => {
           const data = d.data() as Omit<Medication, 'id'>;
           return {
             id: d.id,
@@ -192,8 +192,8 @@ const MedicationSystem = () => {
     if (!user) return;
     const unsub = onSnapshot(
       collection(db, `users/${user.uid}/patients`),
-      (snapshot) => {
-        const patients: Patient[] = snapshot.docs.map((d) => ({
+      snapshot => {
+        const patients: Patient[] = snapshot.docs.map(d => ({
           id: d.id,
           ...(d.data() as Omit<Patient, 'id'>),
         }));
@@ -205,7 +205,7 @@ const MedicationSystem = () => {
   useEffect(() => {
     if (!user) return;
     setLoadingPurchases(true);
-    const unsub = subscribePurchases(user.uid, (items) => {
+    const unsub = subscribePurchases(user.uid, items => {
       setPurchases(items);
       setLoadingPurchases(false);
     });
@@ -227,8 +227,8 @@ const MedicationSystem = () => {
     for (const pid of Object.keys(assignByPatient)) {
       const assigns = assignByPatient[pid];
       result[pid] = Object.values(assigns)
-        .map((assign) => {
-          const master = medsFS.find((m) => m.id === assign.medicationId);
+        .map(assign => {
+          const master = medsFS.find(m => m.id === assign.medicationId);
           if (!master) return null;
           return {
             ...master,
@@ -309,7 +309,7 @@ const MedicationSystem = () => {
     const qty = parseInt(newMedicationPills || '0', 10) || 0;
 
     const existing = medsFS.find(
-      (m) => m.name.toLowerCase() === name.toLowerCase()
+      m => m.name.toLowerCase() === name.toLowerCase()
     );
 
     let medId: string;
@@ -394,7 +394,7 @@ const MedicationSystem = () => {
   };
 
   const getAllMedications = (asOfISO: string): AggregatedMedication[] => {
-    return medsFS.map((m) => {
+    return medsFS.map(m => {
       let totalDaily = 0;
       for (const pid of Object.keys(assignByPatient)) {
         const assign = assignByPatient[pid]?.[m.id];
@@ -496,7 +496,7 @@ const MedicationSystem = () => {
           <Pill className="mr-3 text-blue-600" />
           Axels Pills Tracker
         </h1>
-        <nav className="flex space-x-1">
+        <nav className="flex flex-wrap gap-2">
           <button
             onClick={() => setCurrentPage('patients')}
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
@@ -536,19 +536,19 @@ const MedicationSystem = () => {
   );
 
   const PatientsPage = () => (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
       {/* Добавление нового пациента */}
       <div className="bg-blue-50 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-3 text-blue-800">
           Додати пацієнта
         </h2>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <input
             type="text"
             name="patientName"
             placeholder="ПІБ пацієнта"
             value={newPatientName}
-            onChange={(e) => setNewPatientName(e.target.value)}
+            onChange={e => setNewPatientName(e.target.value)}
             className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <button
@@ -563,7 +563,7 @@ const MedicationSystem = () => {
 
       {/* Список пациентов */}
       <div className="space-y-6">
-        {patients.map((patient) => (
+        {patients.map(patient => (
           <div
             key={patient.id}
             className="border border-gray-200 rounded-lg p-4 bg-gray-50"
@@ -583,12 +583,12 @@ const MedicationSystem = () => {
 
             {/* Добавление препарата */}
             <div className="bg-white p-3 rounded-md mb-4">
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <input
                   type="text"
                   placeholder="Назва препарата"
                   value={selectedPatient === patient.id ? newMedication : ''}
-                  onChange={(e) => {
+                  onChange={e => {
                     setNewMedication(e.target.value);
                     setSelectedPatient(patient.id);
                   }}
@@ -600,7 +600,7 @@ const MedicationSystem = () => {
                   value={
                     selectedPatient === patient.id ? newMedicationPills : ''
                   }
-                  onChange={(e) => {
+                  onChange={e => {
                     setNewMedicationPills(e.target.value);
                     setSelectedPatient(patient.id);
                   }}
@@ -618,7 +618,7 @@ const MedicationSystem = () => {
 
             {/* Список препаратов */}
             <div className="space-y-3">
-              {(medsByPatient[patient.id] || []).map((medication) => {
+              {(medsByPatient[patient.id] || []).map(medication => {
                 const daysRemaining = getDaysRemaining(medication);
                 const warningLevel = getWarningLevel(daysRemaining);
 
@@ -681,9 +681,9 @@ const MedicationSystem = () => {
                       </span>
                     </div>
 
-                    <div className="flex gap-4 ml-6">
+                    <div className="flex flex-wrap gap-4 sm:ml-6">
                       {(['morning', 'afternoon', 'evening'] as TimeOfDay[]).map(
-                        (time) => {
+                        time => {
                           const labels: Record<TimeOfDay, string> = {
                             morning: 'Вранці',
                             afternoon: 'Вдень',
@@ -727,7 +727,7 @@ const MedicationSystem = () => {
                       )}
                     </div>
 
-                    <div className="mt-2 ml-6 text-sm text-gray-600">
+                    <div className="mt-2 sm:ml-6 text-sm text-gray-600">
                       <strong>Приймати:</strong> {getScheduleText(medication)}
                       <span className="ml-4">
                         <strong>В місяць:</strong> ~
@@ -761,10 +761,10 @@ const MedicationSystem = () => {
   const MedicationsPage = () => {
     const allMedications = getAllMedications(selectedDate);
     const criticalMedications = allMedications.filter(
-      (med) => getWarningLevel(med.daysRemaining) === 'critical'
+      med => getWarningLevel(med.daysRemaining) === 'critical'
     );
     const warningMedications = allMedications.filter(
-      (med) => getWarningLevel(med.daysRemaining) === 'warning'
+      med => getWarningLevel(med.daysRemaining) === 'warning'
     );
 
     return (
@@ -779,7 +779,7 @@ const MedicationSystem = () => {
             </span>
           </div>
 
-          <div className="max-w-[300px]">
+          <div className="w-full sm:max-w-[300px]">
             <DatePicker
               selected={new Date(selectedDate)}
               onChange={(date: Date | null) => {
@@ -798,7 +798,7 @@ const MedicationSystem = () => {
 
         {/* Сповіщення */}
         {(criticalMedications.length > 0 || warningMedications.length > 0) && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
               Сповіщення
@@ -900,7 +900,7 @@ const MedicationSystem = () => {
                       </td>
                       <td className="p-3 text-sm text-gray-600">
                         {medication.patients
-                          .map((pid) => patientNameById[pid])
+                          .map(pid => patientNameById[pid])
                           .filter(Boolean)
                           .join(', ') || ''}
                       </td>
@@ -921,13 +921,13 @@ const MedicationSystem = () => {
                             type="number"
                             placeholder="Купили (таб.)"
                             value={buyQty[medication.id as string] ?? ''}
-                            onChange={(e) =>
-                              setBuyQty((prev) => ({
+                            onChange={e =>
+                              setBuyQty(prev => ({
                                 ...prev,
                                 [medication.id as string]: e.target.value,
                               }))
                             }
-                            onKeyDown={(e) => {
+                            onKeyDown={e => {
                               if (e.key === 'Enter') {
                                 const id = medication.id as string;
                                 const val = buyQty[id];
@@ -936,7 +936,7 @@ const MedicationSystem = () => {
                                   { id, name: medication.name },
                                   val
                                 );
-                                setBuyQty((prev) => ({ ...prev, [id]: '' }));
+                                setBuyQty(prev => ({ ...prev, [id]: '' }));
                               }
                             }}
                             className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
@@ -950,7 +950,7 @@ const MedicationSystem = () => {
                                 { id, name: medication.name },
                                 val
                               );
-                              setBuyQty((prev) => ({ ...prev, [id]: '' }));
+                              setBuyQty(prev => ({ ...prev, [id]: '' }));
                             }}
                             className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
                             title="Додати"
@@ -980,7 +980,7 @@ const MedicationSystem = () => {
   const HistoryPage = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
               <History className="w-6 h-6 mr-2 text-green-600" />
@@ -992,9 +992,9 @@ const MedicationSystem = () => {
           </div>
 
           <div className="space-y-4">
-            {purchases.map((p) => (
+            {purchases.map(p => (
               <div key={p.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row justify-between items-start">
                   <div className="flex-1">
                     <div className="font-semibold text-lg">
                       {p.medicationName}
@@ -1012,8 +1012,8 @@ const MedicationSystem = () => {
                           <input
                             type="number"
                             value={editBuff.quantity}
-                            onChange={(e) =>
-                              setEditBuff((prev) => ({
+                            onChange={e =>
+                              setEditBuff(prev => ({
                                 ...prev,
                                 quantity:
                                   parseInt(e.target.value || '0', 10) || 0,
@@ -1029,8 +1029,8 @@ const MedicationSystem = () => {
                           <input
                             type="text"
                             value={editBuff.notes}
-                            onChange={(e) =>
-                              setEditBuff((prev) => ({
+                            onChange={e =>
+                              setEditBuff(prev => ({
                                 ...prev,
                                 notes: e.target.value,
                               }))
@@ -1094,7 +1094,7 @@ const MedicationSystem = () => {
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 ml-4">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:ml-4">
                     {editing?.id === p.id ? null : (
                       <button
                         onClick={() => {
@@ -1142,7 +1142,7 @@ const MedicationSystem = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
-      <div className="max-w-6xl mx-auto px-6 pb-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
         {currentPage === 'patients' && PatientsPage()}
         {currentPage === 'medications' && MedicationsPage()}
         {currentPage === 'history' && HistoryPage()}
