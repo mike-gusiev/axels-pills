@@ -1,6 +1,7 @@
-import { ArrowLeft, Pill, Shield, Lock, Eye, FileText } from 'lucide-react';
+import { Pill, Shield, Lock, Eye, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import Navigation from '../components/Navigation';
 
 const Privacy = () => {
   const navigate = useNavigate();
@@ -11,33 +12,10 @@ const Privacy = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Назад</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <Pill className="w-8 h-8 text-blue-600" />
-            <span className="hidden sm:block text-xl font-bold text-gray-900">
-              Axels Pills
-            </span>
-          </div>
-          <button
-            onClick={() => navigate('/login')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all"
-          >
-            Увійти
-          </button>
-        </div>
-      </header>
+      <Navigation onGetStarted={() => navigate('/register')} />
 
       {/* Hero Section */}
-      <section className="py-10 sm:py-20 px-6">
+      <section className="py-10 sm:py-20 px-6 pt-24 sm:pt-32">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
             <Shield className="w-10 h-10 text-blue-600" />
@@ -58,7 +36,7 @@ const Privacy = () => {
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-blue-100">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Вступ</h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Добро пожалувати до Axels Pills! Ми цінуємо вашу довіру і серйозно
+              Ласкаво просимо до Axels Pills! Ми цінуємо вашу довіру і серйозно
               ставимося до захисту вашої особистої інформації. Ця політика
               конфіденційності описує, яку інформацію ми збираємо, як ми її
               використовуємо та захищаємо.
@@ -315,15 +293,7 @@ const Privacy = () => {
                 <ul className="space-y-2">
                   <li>
                     <strong className="text-gray-900">Email:</strong>{' '}
-                    privacy@axelspills.com
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">Адреса:</strong> вул.
-                    Хрещатик, 1, Київ, 01001, Україна
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">Телефон:</strong> +380
-                    (12) 345-67-89
+                    support@axelspills.com
                   </li>
                 </ul>
               </div>

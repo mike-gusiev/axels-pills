@@ -1,6 +1,7 @@
-import { ArrowLeft, Pill, Target, Users, Award, Heart } from 'lucide-react';
+import { Target, Users, Award, Heart, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import Navigation from '../components/Navigation';
 
 const About = () => {
   const navigate = useNavigate();
@@ -75,33 +76,10 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Назад</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <Pill className="w-8 h-8 text-blue-600" />
-            <span className="hidden sm:block text-xl font-bold text-gray-900">
-              Axels Pills
-            </span>
-          </div>
-          <button
-            onClick={() => navigate('/login')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all"
-          >
-            Увійти
-          </button>
-        </div>
-      </header>
+      <Navigation onGetStarted={() => navigate('/register')} />
 
       {/* Hero Section */}
-      <section className="py-5 sm:py-20 px-6">
+      <section className="py-5 sm:py-20 px-6 pt-24 sm:pt-32">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Про <span className="text-blue-600">Axels Pills</span>
@@ -174,20 +152,19 @@ const About = () => {
           </h2>
           <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
             <p>
-              Axels Pills з'явився з особистої потреби. Наш засновник зіткнувся
-              з проблемою управління медикаментами для свого літнього батька,
-              який приймав декілька препаратів щодня. Постійні забування,
-              плутанина з дозуванням та складність відстеження графіку прийому
-              призвели до ідеї створити просте та надійне рішення.
+              Axels Pills народився в епіцентрі дедлайнів та нескінченних
+              списків справ. Ми помітили, що в сучасному світі людина швидше
+              забуде випити необхідний вітамін чи важливий препарат, ніж
+              перевірити сповіщення в соцмережах.
             </p>
             <p>
-              Протягом останніх п'яти років ми розвивали платформу,
-              прислухаючись до потреб наших користувачів. Від простого додатку
-              для нагадувань ми виросли до повноцінної системи управління
-              здоров'ям, яка допомагає тисячам сімей по всій країні.
+              Ми пройшли шлях від особистої замітки в телефоні до
+              інтелектуальної системи, яка бере рутину на себе. Axels Pills - це
+              ваш «зовнішній мозок» для здоров’я. Ми тут, щоб ви могли
+              фокусуватися на житті, а не на графіках прийому.
             </p>
             <p>
-              Сьогодні Axels Pills — це не просто додаток, а партнер у вашому
+              Сьогодні Axels Pills - це не просто додаток, а партнер у вашому
               здоров'ї. Ми продовжуємо вдосконалювати наші інструменти, додавати
               нові функції та робити життя наших користувачів легшим щодня.
             </p>
