@@ -345,7 +345,7 @@ const Privacy = () => {
             onClick={() => navigate('/register')}
             className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
           >
-            Зареєструватися безкоштовно
+            Зареєструватися
           </button>
         </div>
       </section>
