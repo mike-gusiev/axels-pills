@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-
+import { getDate } from '../utils';
 interface HeroProps {
   onGetStarted: () => void;
 }
@@ -84,7 +84,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             <div className="pt-4 space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span className="text-lg">📅</span>
-                <span className="font-semibold">Сьогодні, 24 Жовтня</span>
+                <span className="font-semibold">Сьогодні, {getDate()}</span>
               </div>
 
               <div className="space-y-2">
