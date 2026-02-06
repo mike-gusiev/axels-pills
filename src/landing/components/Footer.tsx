@@ -5,24 +5,17 @@ const Footer = () => {
     <footer className="bg-gray-900 text-gray-300 py-12 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
-          {/* Brand */}
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-3xl">💊</span>
-              <span className="text-xl font-bold text-white">Axels Pills</span>
-            </div>
-            <p className="text-gray-400 mb-4">
-              Контроль прийому ліків для всієї родини. Нагадування, графік та
-              історія в одному місці.
-            </p>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-blue-400">🇺🇦</span>
-              <span className="text-gray-400">Зроблено в Україні</span>
-            </div>
+          {/* Contact */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Контакти</h4>
+            <ul className="space-y-2 text-sm">
+              <li>E-mail: support@axelspills.com</li>
+              <li>Телефон: +380 (12) 345-67-89</li>
+            </ul>
           </div>
 
           {/* Quick Links */}
-          <div>
+          {/* <div>
             <h4 className="text-white font-semibold mb-4">Швидкі посилання</h4>
             <ul className="space-y-2">
               <li>
@@ -41,15 +34,22 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
-          {/* Contact */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Контакти</h4>
-            <ul className="space-y-2 text-sm">
-              <li>E-mail: support@axelspills.com</li>
-              <li>Телефон: +380 (12) 345-67-89</li>
-            </ul>
+          {/* Brand */}
+          <div className="md:col-span-2 md:col-start-3">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-3xl">💊</span>
+              <span className="text-xl font-bold text-white">Axels Pills</span>
+            </div>
+            <p className="text-gray-400 mb-4">
+              Контроль прийому ліків для всієї родини. Нагадування, графік та
+              історія в одному місці.
+            </p>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-blue-400">🇺🇦</span>
+              <span className="text-gray-400">Зроблено в Україні</span>
+            </div>
           </div>
         </div>
 
@@ -62,9 +62,6 @@ const Footer = () => {
             <Link to="/privacy" className="hover:text-white transition-colors">
               Політика конфіденційності
             </Link>
-            <a href="#" className="hover:text-white transition-colors">
-              Умови використання
-            </a>
           </div>
         </div>
       </div>

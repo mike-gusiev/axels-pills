@@ -102,26 +102,7 @@ const Features = () => {
           </div>
         </div>
 
-        {/* Mobile Apps Section */}
-        <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-12">
-          <div className="text-4xl mb-4">💊</div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Доступно на iOS та Android
-          </h3>
-          <p className="text-gray-600 mb-8">
-            Завантажте додаток та почніть контролювати прийом ліків вже сьогодні
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all flex items-center gap-2">
-              <span className="text-2xl">🍎</span>
-              App Store
-            </button>
-            <button className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all flex items-center gap-2">
-              <span className="text-2xl">🤖</span>
-              Google Play
-            </button>
-          </div>
-        </div>
+      
       </div>
     </section>
   );
