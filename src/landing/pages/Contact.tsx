@@ -56,7 +56,9 @@ const Contact = () => {
           </button>
           <div className="flex items-center gap-2">
             <Pill className="w-8 h-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Axels Pills</span>
+            <span className="hidden sm:block text-xl font-bold text-gray-900">
+              Axels Pills
+            </span>
           </div>
           <button
             onClick={() => navigate('/login')}
@@ -97,7 +99,7 @@ const Contact = () => {
 
             {/* Contact Cards */}
             <div className="space-y-4">
-              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-blue-100 hover:shadow-xl transition-all">
+              <div className="bg-white rounded-xl p-2 sm:p-6 shadow-lg border-2 border-blue-100 hover:shadow-xl transition-all">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Mail className="w-6 h-6 text-blue-600" />
@@ -119,7 +121,7 @@ const Contact = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-green-100 hover:shadow-xl transition-all">
+              <div className="bg-white rounded-xl p-2 sm:p-6 shadow-lg border-2 border-green-100 hover:shadow-xl transition-all">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Phone className="w-6 h-6 text-green-600" />
@@ -141,7 +143,7 @@ const Contact = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-purple-100 hover:shadow-xl transition-all">
+              <div className="bg-white rounded-xl p-2 sm:p-6 shadow-lg border-2 border-purple-100 hover:shadow-xl transition-all">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-6 h-6 text-purple-600" />
@@ -160,7 +162,7 @@ const Contact = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-orange-100 hover:shadow-xl transition-all">
+              <div className="bg-white rounded-xl p-2 sm:p-6 shadow-lg border-2 border-orange-100 hover:shadow-xl transition-all">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
                     <MessageSquare className="w-6 h-6 text-orange-600" />

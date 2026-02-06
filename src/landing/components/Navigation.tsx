@@ -1,5 +1,6 @@
-import { Pill } from 'lucide-react';
+import { Pill, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 interface NavigationProps {
   onGetStarted: () => void;
@@ -7,12 +8,19 @@ interface NavigationProps {
 
 const Navigation = ({ onGetStarted }: NavigationProps) => {
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    setIsMenuOpen(false);
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
   };
 
   return (
@@ -47,14 +55,62 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
             </button>
           </div>
 
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-gray-600 hover:text-blue-600 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+
           {/* CTA Button */}
           <button
             onClick={onGetStarted}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
+            className="hidden md:block bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
           >
             Логін
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 py-4 border-t border-gray-200">
+            <div className="flex flex-col space-y-4">
+              <button
+                onClick={() => scrollToSection('features')}
+                className="text-left text-gray-600 hover:text-blue-600 transition-colors font-medium py-2"
+              >
+                Можливості
+              </button>
+              <button
+                onClick={() => handleNavigate('/about')}
+                className="text-left text-gray-600 hover:text-blue-600 transition-colors font-medium py-2"
+              >
+                Про нас
+              </button>
+              <button
+                onClick={() => handleNavigate('/contact')}
+                className="text-left text-gray-600 hover:text-blue-600 transition-colors font-medium py-2"
+              >
+                Контакти
+              </button>
+              <button
+                onClick={() => {
+                  onGetStarted();
+                  setIsMenuOpen(false);
+                }}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md text-center max-w-[200px]"
+              >
+                Логін
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

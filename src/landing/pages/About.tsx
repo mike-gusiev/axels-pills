@@ -87,7 +87,9 @@ const About = () => {
           </button>
           <div className="flex items-center gap-2">
             <Pill className="w-8 h-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Axels Pills</span>
+            <span className="hidden sm:block text-xl font-bold text-gray-900">
+              Axels Pills
+            </span>
           </div>
           <button
             onClick={() => navigate('/login')}
@@ -99,7 +101,7 @@ const About = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-6">
+      <section className="py-5 sm:py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Про <span className="text-blue-600">Axels Pills</span>
@@ -114,7 +116,7 @@ const About = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 px-6">
+      <section className="py-5 sm:py-12 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -133,7 +135,7 @@ const About = () => {
       </section>
 
       {/* Values Section */}
-      <section className="py-20 px-6">
+      <section className="py-5 sm:py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">
             Що робить нас особливими
@@ -165,7 +167,7 @@ const About = () => {
       </section>
 
       {/* Story Section */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-5 sm:py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-gray-900 mb-8">
             Наша історія
@@ -194,7 +196,7 @@ const About = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-700">
+      <section className="py-5 sm:py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-700">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-4xl font-bold mb-6">
             Приєднуйтесь до тисяч задоволених користувачів

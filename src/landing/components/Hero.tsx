@@ -65,7 +65,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
 
         {/* Right Content - Hero Image Placeholder */}
         <div className="relative">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+          <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-8 space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <span className="text-2xl">💊</span>
