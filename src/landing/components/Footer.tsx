@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-gray-300 py-12 px-6">
@@ -57,9 +59,9 @@ const Footer = () => {
             © 2026 Axels Pills. Всі права захищено.
           </p>
           <div className="flex gap-6 text-sm">
-            <a href="#" className="hover:text-white transition-colors">
+            <Link to="/privacy" className="hover:text-white transition-colors">
               Політика конфіденційності
-            </a>
+            </Link>
             <a href="#" className="hover:text-white transition-colors">
               Умови використання
             </a>

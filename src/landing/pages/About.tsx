@@ -1,8 +1,13 @@
 import { ArrowLeft, Pill, Target, Users, Award, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const About = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const stats = [
     { value: '5+', label: 'Років на ринку' },
