@@ -12,13 +12,8 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleFeaturesClick = () => {
-    if (location.pathname === '/') {
-      const element = document.getElementById('features');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    } else {
-      navigate('/', { state: { scrollTo: 'features' } });
+    if (location.pathname !== '/') {
+      navigate('/');
     }
     setIsMenuOpen(false);
   };
@@ -57,7 +52,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
                   : 'text-gray-600 hover:text-blue-600'
               }`}
             >
-              Можливості
+              Головна
             </button>
             <button
               onClick={() => handleNavigate('/about')}
@@ -105,7 +100,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
                     : 'text-gray-600 hover:text-blue-600'
                 }`}
               >
-                Можливості
+                Головна
               </button>
               <button
                 onClick={() => handleNavigate('/about')}

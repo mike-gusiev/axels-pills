@@ -1,7 +1,8 @@
-import { Pill, Shield, Lock, Eye, FileText } from 'lucide-react';
+import { Shield, Lock, Eye, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navigation from '../components/Navigation';
+import Footer from '../components/Footer';
 
 const Privacy = () => {
   const navigate = useNavigate();
@@ -320,18 +321,7 @@ const Privacy = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Pill className="w-8 h-8 text-blue-400" />
-            <span className="text-2xl font-bold">Axels Pills</span>
-          </div>
-          <p className="text-gray-400">
-            © 2026 Axels Pills. Всі права захищені.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
