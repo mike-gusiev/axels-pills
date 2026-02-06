@@ -1,10 +1,13 @@
 import { Pill } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   onGetStarted: () => void;
 }
 
 const Navigation = ({ onGetStarted }: NavigationProps) => {
+  const navigate = useNavigate();
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -31,7 +34,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
               Можливості
             </button>
             <button
-              onClick={() => scrollToSection('about')}
+              onClick={() => navigate('/about')}
               className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
             >
               Про нас
