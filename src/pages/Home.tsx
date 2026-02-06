@@ -492,10 +492,23 @@ const MedicationSystem = () => {
   const Header = () => (
     <div className="bg-white shadow-lg mb-6">
       <div className="max-w-6xl mx-auto px-6 py-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 flex items-center">
-          <Pill className="mr-3 text-blue-600" />
-          Axels Pills Tracker
-        </h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+            <Pill className="mr-3 text-blue-600" />
+            Axels Pills
+          </h1>
+          <button
+            onClick={async () => {
+              const { signOut } = await import('firebase/auth');
+              const { auth } = await import('../firebase');
+              await signOut(auth);
+              window.location.href = '/';
+            }}
+            className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+          >
+            Вийти
+          </button>
+        </div>
         <nav className="flex flex-wrap gap-2">
           <button
             onClick={() => setCurrentPage('patients')}
@@ -638,7 +651,7 @@ const MedicationSystem = () => {
                           <Pill className="w-4 h-4 mr-2 text-blue-600" />
                           {medication.name}
                         </h4>
-                        <div className="flex items-center mt-1 space-x-4">
+                        <div className="flex flex-wrap items-center mt-1 gap-2">
                           <span className="text-sm text-gray-600">
                             Залишилося:{' '}
                             <strong>{medication.pillsRemaining} таб.</strong>
@@ -807,7 +820,7 @@ const MedicationSystem = () => {
             {criticalMedications.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-red-800 mb-2">
-                  Критический уровень запасов:
+                  Критичний рівень запасів:
                 </h3>
                 <div className="space-y-2">
                   {criticalMedications.map((med, index) => (
