@@ -46,6 +46,7 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-4">Контакти</h4>
             <ul className="space-y-2 text-sm">
               <li>E-mail: support@axelspills.com</li>
+              <li>Телефон: +380 (12) 345-67-89</li>
             </ul>
           </div>
         </div>

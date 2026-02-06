@@ -40,7 +40,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
               Про нас
             </button>
             <button
-              onClick={() => scrollToSection('contact')}
+              onClick={() => navigate('/contact')}
               className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
             >
               Контакти
@@ -52,7 +52,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
             onClick={onGetStarted}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
           >
-            Почати
+            Логін
           </button>
         </div>
       </div>

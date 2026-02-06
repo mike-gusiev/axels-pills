@@ -5,6 +5,13 @@ interface HeroProps {
 }
 
 const Hero = ({ onGetStarted }: HeroProps) => {
+  const scrollToFeatures = () => {
+    const element = document.getElementById('features');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center px-6 py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
@@ -26,10 +33,13 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               onClick={onGetStarted}
               className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             >
-              Почати безкоштовно
+              Почати користування
               <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="bg-white text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200">
+            <button
+              onClick={scrollToFeatures}
+              className="bg-white text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200"
+            >
               Дізнатися більше
             </button>
           </div>

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Home, Login, Register } from './pages/index';
-import { Landing, About } from './landing';
+import { Landing, About, Contact } from './landing';
 import { useAuth } from './hooks/useAuth';
 
 function LandingOrHome() {
@@ -19,7 +19,7 @@ function LandingOrHome() {
     return <Navigate to="/home" replace />;
   }
 
-  return <Landing onGetStarted={() => (window.location.href = '/login')} />;
+  return <Landing onGetStarted={() => (window.location.href = '/register')} />;
 }
 
 export default function App() {
@@ -28,6 +28,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingOrHome />} />
         <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
 
         <Route
           path="/home"
