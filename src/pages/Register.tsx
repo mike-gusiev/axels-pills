@@ -46,7 +46,7 @@ const RegisterPage: React.FC = () => {
         username,
         createdAt: serverTimestamp(),
       });
-      nav('/');
+      nav('/home');
     } catch (e: any) {
       setErr(mapFirebaseError(e?.code));
     } finally {
@@ -75,7 +75,7 @@ const RegisterPage: React.FC = () => {
                 type="text"
                 required
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={e => setUsername(e.target.value)}
                 className="block w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Напр., Оксана"
               />
@@ -91,7 +91,7 @@ const RegisterPage: React.FC = () => {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="you@example.com"
                 />
@@ -108,7 +108,7 @@ const RegisterPage: React.FC = () => {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="мін. 6 символів"
                 />
@@ -123,7 +123,7 @@ const RegisterPage: React.FC = () => {
                 type="password"
                 required
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={e => setConfirm(e.target.value)}
                 className="block w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="повторіть пароль"
               />

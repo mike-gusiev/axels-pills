@@ -492,10 +492,22 @@ const MedicationSystem = () => {
   const Header = () => (
     <div className="bg-white shadow-lg mb-6">
       <div className="max-w-6xl mx-auto px-6 py-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 flex items-center">
-          <Pill className="mr-3 text-blue-600" />
-          Axels Pills Tracker
-        </h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+            <Pill className="mr-3 text-blue-600" />
+            Axels Pills Tracker
+          </h1>
+          <button
+            onClick={async () => {
+              const { signOut } = await import('firebase/auth');
+              const { auth } = await import('../firebase');
+              await signOut(auth);
+            }}
+            className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+          >
+            Вийти
+          </button>
+        </div>
         <nav className="flex flex-wrap gap-2">
           <button
             onClick={() => setCurrentPage('patients')}
