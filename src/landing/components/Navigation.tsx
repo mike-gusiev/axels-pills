@@ -6,6 +6,7 @@ interface NavigationProps {
   onGetStarted: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Navigation = ({ onGetStarted }: NavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,7 +82,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
 
           {/* CTA Button */}
           <button
-            onClick={onGetStarted}
+            onClick={() => handleNavigate('/login')}
             className="hidden md:block bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
           >
             Логін
@@ -113,10 +114,7 @@ const Navigation = ({ onGetStarted }: NavigationProps) => {
                 Про нас
               </button>
               <button
-                onClick={() => {
-                  onGetStarted();
-                  setIsMenuOpen(false);
-                }}
+                onClick={() => handleNavigate('/login')}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md text-center max-w-[200px]"
               >
                 Логін
