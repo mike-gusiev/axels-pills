@@ -7,7 +7,7 @@ const About = () => {
 
   const stats = [
     { value: '5+', label: t('about.stats.years') },
-    { value: '10K+', label: t('about.stats.users') },
+    { value: '10K+', label: t('about.stats.hoursEconomized') },
     { value: '1M+', label: t('about.stats.reminders') },
     { value: '99%', label: t('about.stats.satisfaction') },
   ];

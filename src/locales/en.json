@@ -25,6 +25,8 @@
     "subtitle": "Never forget to take your medications on time. Axels Pills - your personal health assistant.",
     "getStarted": "Get Started",
     "learnMore": "Learn More",
+    "users": "Active Users",
+    "pillsTracked": "Tracked Pills",
     "onTime": "Timely medication taken",
     "pillsReserve": "Pill Supply",
     "omega": "Omega-3",
@@ -79,7 +81,7 @@
     "subtitle": "We created Axels Pills to make health management simpler and more accessible for everyone. Our platform helps thousands of people daily to follow their medication schedule and improve their quality of life.",
     "stats": {
       "years": "Years on Market",
-      "users": "Active Users",
+      "hoursEconomized": "Hours saved",
       "reminders": "Reminders Sent",
       "satisfaction": "Satisfied Clients"
     },

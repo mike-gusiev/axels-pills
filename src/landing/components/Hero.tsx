@@ -53,19 +53,19 @@ const Hero = ({ onGetStarted }: HeroProps) => {
           <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200 dark:border-gray-700">
             <div>
               <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                5K+
+                7K+
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300">
                 {' '}
-                {t('about.stats.users')}
+                {t('hero.users')}
               </div>
             </div>
             <div>
               <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                10K+
+                100K+
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300">
-                {t('about.stats.reminders')}
+                {t('hero.pillsTracked')}
               </div>
             </div>
             <div>
