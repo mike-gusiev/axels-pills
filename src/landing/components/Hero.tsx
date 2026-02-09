@@ -5,8 +5,8 @@ interface HeroProps {
 }
 
 const Hero = ({ onGetStarted }: HeroProps) => {
-  const scrollToFeatures = () => {
-    const element = document.getElementById('features');
+  const scrollToAbout = () => {
+    const element = document.getElementById('about');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -37,7 +37,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               <ArrowRight className="w-5 h-5" />
             </button>
             <button
-              onClick={scrollToFeatures}
+              onClick={scrollToAbout}
               className="bg-white text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200"
             >
               Дізнатися більше

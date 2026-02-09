@@ -1,15 +1,8 @@
 import { Target, Users, Award, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import Navigation from '../components/Navigation';
-import Footer from '../components/Footer';
 
 const About = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   const stats = [
     { value: '5+', label: 'Років на ринку' },
@@ -76,15 +69,13 @@ const About = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <Navigation onGetStarted={() => navigate('/register')} />
-
+    <div id="about" className="bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
-      <section className="py-5 sm:py-20 px-6 pt-24 sm:pt-32">
+      <section className="py-5 sm:py-20 px-6" id="about">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Про <span className="text-blue-600">Axels Pills</span>
-          </h1>
+          </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
             Ми створили Axels Pills, щоб зробити контроль за здоров'ям простішим
             та доступнішим для кожного. Наша платформа допомагає тисячам людей
@@ -116,9 +107,9 @@ const About = () => {
       {/* Values Section */}
       <section className="py-5 sm:py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">
+          <h3 className="text-4xl font-bold text-gray-900 text-center mb-12">
             Що робить нас особливими
-          </h2>
+          </h3>
           <div className="grid md:grid-cols-2 gap-8">
             {values.map((value, index) => {
               const colors = colorClasses[value.color];
@@ -132,9 +123,9 @@ const About = () => {
                   >
                     {value.icon}
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  <h4 className="text-2xl font-bold text-gray-900 mb-4">
                     {value.title}
-                  </h3>
+                  </h4>
                   <p className="text-gray-600 leading-relaxed">
                     {value.description}
                   </p>
@@ -148,9 +139,9 @@ const About = () => {
       {/* Story Section */}
       <section className="py-5 sm:py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">
+          <h3 className="text-4xl font-bold text-gray-900 mb-8">
             Наша історія
-          </h2>
+          </h3>
           <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
             <p>
               Axels Pills народився в епіцентрі дедлайнів та нескінченних
@@ -161,7 +152,7 @@ const About = () => {
             <p>
               Ми пройшли шлях від особистої замітки в телефоні до
               інтелектуальної системи, яка бере рутину на себе. Axels Pills - це
-              ваш «зовнішній мозок» для здоров’я. Ми тут, щоб ви могли
+              ваш «зовнішній мозок» для здоров'я. Ми тут, щоб ви могли
               фокусуватися на житті, а не на графіках прийому.
             </p>
             <p>
@@ -176,9 +167,9 @@ const About = () => {
       {/* CTA Section */}
       <section className="py-5 sm:py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-700">
         <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl font-bold mb-6">
+          <h3 className="text-4xl font-bold mb-6">
             Приєднуйтесь до тисяч задоволених користувачів
-          </h2>
+          </h3>
           <p className="text-xl mb-8 text-blue-100">
             Почніть контролювати своє здоров'я вже сьогодні
           </p>
@@ -190,8 +181,6 @@ const About = () => {
           </button>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

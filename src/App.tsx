@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Home, Login, Register } from './pages/index';
-import { Landing, About, Privacy } from './landing';
+import { Landing, Privacy } from './landing';
 import { useAuth } from './hooks/useAuth';
 
 function LandingOrHome() {
@@ -27,7 +27,6 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingOrHome />} />
-        <Route path="/about" element={<About />} />
         <Route path="/privacy" element={<Privacy />} />
 
         <Route
