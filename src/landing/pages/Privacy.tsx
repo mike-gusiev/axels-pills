@@ -21,7 +21,7 @@ const Privacy = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
             <Shield className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Політика <span className="text-blue-600">конфіденційності</span>
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
