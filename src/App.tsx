@@ -3,6 +3,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { Home, Login, Register } from './pages/index';
 import { Landing, Privacy } from './landing';
 import { useAuth } from './hooks/useAuth';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function LandingOrHome() {
   const { user, loading } = useAuth();
@@ -24,25 +25,27 @@ function LandingOrHome() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingOrHome />} />
-        <Route path="/privacy" element={<Privacy />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingOrHome />} />
+          <Route path="/privacy" element={<Privacy />} />
 
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route path="*" element={<div>404 Not Found</div>} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<div>404 Not Found</div>} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

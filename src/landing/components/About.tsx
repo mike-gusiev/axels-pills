@@ -41,40 +41,64 @@ const About = () => {
 
   const colorClasses: Record<
     string,
-    { bg: string; text: string; border: string }
+    {
+      bg: string;
+      text: string;
+      border: string;
+      darkBg: string;
+      darkBorder: string;
+      darkText: string;
+    }
   > = {
     blue: {
       bg: 'bg-blue-50',
       text: 'text-blue-600',
       border: 'border-blue-200',
+      darkBg: 'dark:bg-blue-900/20',
+      darkBorder: 'dark:border-blue-800',
+      darkText: 'dark:text-blue-400',
     },
     green: {
       bg: 'bg-green-50',
       text: 'text-green-600',
       border: 'border-green-200',
+      darkBg: 'dark:bg-green-900/20',
+      darkBorder: 'dark:border-green-800',
+      darkText: 'dark:text-green-400',
     },
     purple: {
       bg: 'bg-purple-50',
       text: 'text-purple-600',
       border: 'border-purple-200',
+      darkBg: 'dark:bg-purple-900/20',
+      darkBorder: 'dark:border-purple-800',
+      darkText: 'dark:text-purple-400',
     },
     red: {
       bg: 'bg-red-50',
       text: 'text-red-600',
       border: 'border-red-200',
+      darkBg: 'dark:bg-red-900/20',
+      darkBorder: 'dark:border-red-800',
+      darkText: 'dark:text-red-400',
     },
   };
 
   return (
-    <div id="about" className="bg-gradient-to-b from-blue-50 to-white">
+    <div
+      id="about"
+      className="bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300"
+    >
       {/* Hero Section */}
       <section className="py-5 sm:py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
             {t('about.title')}{' '}
-            <span className="text-blue-600">{t('about.titleBrand')}</span>
+            <span className="text-blue-600 dark:text-blue-400">
+              {t('about.titleBrand')}
+            </span>
           </h2>
-          <p className="text-xl text-gray-600 leading-relaxed">
+          <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
             {t('about.subtitle')}
           </p>
         </div>
@@ -87,12 +111,14 @@ const About = () => {
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-8 shadow-lg text-center border-2 border-blue-100"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg text-center border-2 border-blue-100 dark:border-blue-800 transition-colors duration-300"
               >
-                <div className="text-4xl font-bold text-blue-600 mb-2">
+                <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
                   {stat.value}
                 </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+                <div className="text-gray-600 dark:text-gray-300 font-medium">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -102,7 +128,7 @@ const About = () => {
       {/* Values Section */}
       <section className="py-5 sm:py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h3 className="text-4xl font-bold text-gray-900 text-center mb-12">
+          <h3 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-12">
             {t('about.valuesTitle')}
           </h3>
           <div className="grid md:grid-cols-2 gap-8">
@@ -111,17 +137,17 @@ const About = () => {
               return (
                 <div
                   key={index}
-                  className={`p-8 rounded-2xl border-2 ${colors.border} ${colors.bg} hover:shadow-lg transition-all`}
+                  className={`p-8 rounded-2xl border-2 ${colors.border} ${colors.darkBorder} ${colors.bg} ${colors.darkBg} hover:shadow-lg transition-all`}
                 >
                   <div
-                    className={`w-16 h-16 ${colors.bg} rounded-xl flex items-center justify-center ${colors.text} mb-6 border ${colors.border}`}
+                    className={`w-16 h-16 ${colors.bg} ${colors.darkBg} rounded-xl flex items-center justify-center ${colors.text} ${colors.darkText} mb-6 border ${colors.border} ${colors.darkBorder}`}
                   >
                     {value.icon}
                   </div>
-                  <h4 className="text-2xl font-bold text-gray-900 mb-4">
+                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                     {value.title}
                   </h4>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                     {value.description}
                   </p>
                 </div>
@@ -132,12 +158,12 @@ const About = () => {
       </section>
 
       {/* Story Section */}
-      <section className="py-5 sm:py-20 px-6 bg-white">
+      <section className="py-5 sm:py-20 px-6 bg-white dark:bg-gray-800 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-4xl font-bold text-gray-900 mb-8">
+          <h3 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
             {t('about.storyTitle')}
           </h3>
-          <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
+          <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
             <p>{t('about.story.paragraph1')}</p>
             <p>{t('about.story.paragraph2')}</p>
             <p>{t('about.story.paragraph3')}</p>
