@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
+import JoinUs from '../components/JoinUs';
+import { useTranslation } from 'react-i18next';
 
 const Privacy = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -22,10 +25,13 @@ const Privacy = () => {
             <Shield className="w-10 h-10 text-blue-600" />
           </div>
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Політика <span className="text-blue-600">конфіденційності</span>
+            {t('privacy.titlePolicy')}
+            <span className="text-blue-600">
+              {t('privacy.titleConfidentiality')}
+            </span>
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Останнє оновлення: 6 лютого 2026 року
+            {t('privacy.lastUpdated')}
           </p>
         </div>
       </section>
@@ -35,17 +41,14 @@ const Privacy = () => {
         <div className="max-w-4xl mx-auto">
           {/* Introduction */}
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-blue-100">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Вступ</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              {t('privacy.intro.title')}
+            </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Ласкаво просимо до Axels Pills! Ми цінуємо вашу довіру і серйозно
-              ставимося до захисту вашої особистої інформації. Ця політика
-              конфіденційності описує, яку інформацію ми збираємо, як ми її
-              використовуємо та захищаємо.
+              {t('privacy.intro.paragraph1')}
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Використовуючи наш сервіс, ви погоджуєтесь з умовами цієї політики
-              конфіденційності. Якщо у вас є питання, будь ласка, зв'яжіться з
-              нами.
+              {t('privacy.intro.paragraph2')}
             </p>
           </div>
 
@@ -56,10 +59,10 @@ const Privacy = () => {
                 <Lock className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Шифрування даних
+                {t('privacy.keyPoints.encryption.title')}
               </h3>
               <p className="text-gray-600">
-                Всі ваші медичні дані зберігаються в зашифрованому вигляді
+                {t('privacy.keyPoints.encryption.description')}
               </p>
             </div>
 
@@ -68,10 +71,10 @@ const Privacy = () => {
                 <Eye className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Контроль доступу
+                {t('privacy.keyPoints.access.title')}
               </h3>
               <p className="text-gray-600">
-                Тільки ви маєте доступ до своїх медичних записів
+                {t('privacy.keyPoints.access.description')}
               </p>
             </div>
 
@@ -80,10 +83,10 @@ const Privacy = () => {
                 <Shield className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Відповідність GDPR
+                {t('privacy.keyPoints.gdpr.title')}
               </h3>
               <p className="text-gray-600">
-                Ми дотримуємось усіх вимог європейського законодавства
+                {t('privacy.keyPoints.gdpr.description')}
               </p>
             </div>
 
@@ -92,10 +95,10 @@ const Privacy = () => {
                 <FileText className="w-6 h-6 text-orange-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Прозорість
+                {t('privacy.keyPoints.transparency.title')}
               </h3>
               <p className="text-gray-600">
-                Ви завжди знаєте, які дані ми збираємо і для чого
+                {t('privacy.keyPoints.transparency.description')}
               </p>
             </div>
           </div>
@@ -105,29 +108,32 @@ const Privacy = () => {
             {/* Section 1 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                1. Яку інформацію ми збираємо
+                {t('privacy.section1.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  <strong className="text-gray-900">Особисті дані:</strong>{' '}
-                  ім'я, електронна пошта, телефон (за бажанням)
-                </p>
-                <p>
-                  <strong className="text-gray-900">Медичні дані:</strong>{' '}
-                  інформація про медикаменти, графік прийому, нагадування,
-                  дозування
-                </p>
-                <p>
-                  <strong className="text-gray-900">Технічні дані:</strong>{' '}
-                  IP-адреса, тип пристрою, версія браузера для покращення роботи
-                  сервісу
+                  <strong className="text-gray-900">
+                    {t('privacy.section1.personal')}
+                  </strong>{' '}
+                  {t('privacy.section1.personalDesc')}
                 </p>
                 <p>
                   <strong className="text-gray-900">
-                    Дані про використання:
+                    {t('privacy.section1.medical')}
                   </strong>{' '}
-                  як ви використовуєте наш додаток для покращення
-                  функціональності
+                  {t('privacy.section1.medicalDesc')}
+                </p>
+                <p>
+                  <strong className="text-gray-900">
+                    {t('privacy.section1.technical')}
+                  </strong>{' '}
+                  {t('privacy.section1.technicalDesc')}
+                </p>
+                <p>
+                  <strong className="text-gray-900">
+                    {t('privacy.section1.usage')}
+                  </strong>{' '}
+                  {t('privacy.section1.usageDesc')}
                 </p>
               </div>
             </div>
@@ -135,18 +141,15 @@ const Privacy = () => {
             {/* Section 2 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                2. Як ми використовуємо вашу інформацію
+                {t('privacy.section2.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <ul className="list-disc list-inside space-y-2">
-                  <li>
-                    Надання основної функціональності додатка (нагадування,
-                    графік)
-                  </li>
-                  <li>Покращення якості сервісу та користувацького досвіду</li>
-                  <li>Надсилання важливих повідомлень про сервіс</li>
-                  <li>Забезпечення безпеки та запобігання шахрайству</li>
-                  <li>Відповідність законодавчим вимогам</li>
+                  <li>{t('privacy.section2.item1')}</li>
+                  <li>{t('privacy.section2.item2')}</li>
+                  <li>{t('privacy.section2.item3')}</li>
+                  <li>{t('privacy.section2.item4')}</li>
+                  <li>{t('privacy.section2.item5')}</li>
                 </ul>
               </div>
             </div>
@@ -154,20 +157,17 @@ const Privacy = () => {
             {/* Section 3 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                3. Захист ваших даних
+                {t('privacy.section3.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>
-                  Ми використовуємо передові технології безпеки для захисту
-                  ваших даних:
-                </p>
+                <p>{t('privacy.section3.intro')}</p>
                 <ul className="list-disc list-inside space-y-2">
-                  <li>SSL/TLS шифрування для передачі даних</li>
-                  <li>AES-256 шифрування для зберігання даних</li>
-                  <li>Регулярні аудити безпеки</li>
-                  <li>Двофакторна автентифікація (опціонально)</li>
-                  <li>Резервне копіювання даних</li>
-                  <li>Обмежений доступ співробітників до даних</li>
+                  <li>{t('privacy.section3.item1')}</li>
+                  <li>{t('privacy.section3.item2')}</li>
+                  <li>{t('privacy.section3.item3')}</li>
+                  <li>{t('privacy.section3.item4')}</li>
+                  <li>{t('privacy.section3.item5')}</li>
+                  <li>{t('privacy.section3.item6')}</li>
                 </ul>
               </div>
             </div>
@@ -175,22 +175,29 @@ const Privacy = () => {
             {/* Section 4 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                4. Обмін інформацією з третіми сторонами
+                {t('privacy.section4.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Ми <strong className="text-gray-900">НЕ продаємо</strong> ваші
-                  особисті дані третім особам. Ми можемо ділитися інформацією
-                  тільки в таких випадках:
+                  {
+                    t('privacy.section4.intro').split(
+                      t('privacy.section4.notSell')
+                    )[0]
+                  }
+                  <strong className="text-gray-900">
+                    {t('privacy.section4.notSell')}
+                  </strong>
+                  {
+                    t('privacy.section4.intro').split(
+                      t('privacy.section4.notSell')
+                    )[1]
+                  }
                 </p>
                 <ul className="list-disc list-inside space-y-2">
-                  <li>За вашою явною згодою</li>
-                  <li>
-                    З сервіс-провайдерами, які допомагають нам надавати послуги
-                    (хмарне сховище, аналітика)
-                  </li>
-                  <li>Якщо це вимагається законом або судовим рішенням</li>
-                  <li>Для захисту прав та безпеки користувачів</li>
+                  <li>{t('privacy.section4.item1')}</li>
+                  <li>{t('privacy.section4.item2')}</li>
+                  <li>{t('privacy.section4.item3')}</li>
+                  <li>{t('privacy.section4.item4')}</li>
                 </ul>
               </div>
             </div>
@@ -198,37 +205,18 @@ const Privacy = () => {
             {/* Section 5 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                5. Ваші права
+                {t('privacy.section5.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>Ви маєте право:</p>
+                <p>{t('privacy.section5.intro')}</p>
                 <ul className="list-disc list-inside space-y-2">
-                  <li>
-                    <strong className="text-gray-900">Доступ:</strong>{' '}
-                    переглядати всі дані, які ми зберігаємо про вас
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">Виправлення:</strong>{' '}
-                    виправляти неточні дані
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">Видалення:</strong>{' '}
-                    запитати видалення ваших даних
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">Експорт:</strong> отримати
-                    копію ваших даних у зручному форматі
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">
-                      Відкликання згоди:
-                    </strong>{' '}
-                    в будь-який момент відкликати згоду на обробку даних
-                  </li>
-                  <li>
-                    <strong className="text-gray-900">Скарга:</strong> подати
-                    скаргу до наглядового органу
-                  </li>
+                  <li>{t('privacy.section5.item1')}</li>
+                  <li>{t('privacy.section5.item2')}</li>
+                  <li>{t('privacy.section5.item3')}</li>
+                  <li>{t('privacy.section5.item4')}</li>
+                  <li>{t('privacy.section5.item5')}</li>
+                  <li>{t('privacy.section5.item6')}</li>
+                  <li>{t('privacy.section5.item7')}</li>
                 </ul>
               </div>
             </div>
@@ -236,65 +224,95 @@ const Privacy = () => {
             {/* Section 6 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                6. Cookies та технології відстеження
+                {t('privacy.section6.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>Ми використовуємо cookies для:</p>
+                <p>{t('privacy.section6.intro')}</p>
                 <ul className="list-disc list-inside space-y-2">
-                  <li>Збереження налаштувань входу</li>
-                  <li>Аналізу використання сервісу</li>
-                  <li>Покращення функціональності</li>
+                  <li>{t('privacy.section6.item1')}</li>
+                  <li>{t('privacy.section6.item2')}</li>
+                  <li>{t('privacy.section6.item3')}</li>
                 </ul>
-                <p>
-                  Ви можете контролювати використання cookies через налаштування
-                  браузера.
-                </p>
+                <p>{t('privacy.section6.outro')}</p>
               </div>
             </div>
 
             {/* Section 7 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                7. Зберігання даних
+                {t('privacy.section7.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>
-                  Ми зберігаємо ваші дані доти, доки ваш акаунт активний або
-                  доки це необхідно для надання послуг. Після видалення акаунта
-                  ваші дані видаляються протягом 30 днів, окрім випадків, коли
-                  ми зобов'язані зберігати їх за законом.
-                </p>
+                <p>{t('privacy.section7.paragraph1')}</p>
+                <p>{t('privacy.section7.paragraph2')}</p>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>{t('privacy.section7.item1')}</li>
+                  <li>{t('privacy.section7.item2')}</li>
+                  <li>{t('privacy.section7.item3')}</li>
+                </ul>
               </div>
             </div>
 
             {/* Section 8 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                8. Зміни до політики конфіденційності
+                {t('privacy.section8.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>
-                  Ми можемо оновлювати цю політику час від часу. Про суттєві
-                  зміни ми повідомимо вас через додаток або електронну пошту.
-                  Рекомендуємо періодично переглядати цю сторінку.
-                </p>
+                <p>{t('privacy.section8.content')}</p>
               </div>
             </div>
 
             {/* Section 9 */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                9. Контактна інформація
+                {t('privacy.section9.title')}
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
-                <p>
-                  Якщо у вас є питання щодо цієї політики конфіденційності або
-                  обробки ваших даних, зв'яжіться з нами:
-                </p>
+                <p>{t('privacy.section9.content')}</p>
+              </div>
+            </div>
+
+            {/* Section 10 */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                {t('privacy.section10.title')}
+              </h2>
+              <div className="space-y-4 text-gray-600 leading-relaxed">
+                <p>{t('privacy.section10.paragraph1')}</p>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>{t('privacy.section10.item1')}</li>
+                  <li>{t('privacy.section10.item2')}</li>
+                  <li>{t('privacy.section10.item3')}</li>
+                </ul>
+                <p>{t('privacy.section10.paragraph2')}</p>
+              </div>
+            </div>
+
+            {/* Contact Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                {t('privacy.contact.title')}
+              </h2>
+              <div className="space-y-4 text-gray-600 leading-relaxed">
+                <p>{t('privacy.contact.intro')}</p>
                 <ul className="space-y-2">
                   <li>
-                    <strong className="text-gray-900">Email:</strong>{' '}
+                    <strong className="text-gray-900">
+                      {t('privacy.contact.email')}
+                    </strong>{' '}
+                    privacy@axelspills.com
+                  </li>
+                  <li>
+                    <strong className="text-gray-900">
+                      {t('privacy.contact.general')}
+                    </strong>{' '}
                     support@axelspills.com
+                  </li>
+                  <li>
+                    <strong className="text-gray-900">
+                      {t('privacy.contact.address')}
+                    </strong>
                   </li>
                 </ul>
               </div>
@@ -303,23 +321,7 @@ const Privacy = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-700">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl font-bold mb-6">
-            Ваша конфіденційність — наш пріоритет
-          </h2>
-          <p className="text-xl mb-8 text-blue-100">
-            Приєднуйтесь до тисяч користувачів, які довіряють нам
-          </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
-          >
-            Зареєструватися
-          </button>
-        </div>
-      </section>
+      <JoinUs />
 
       <Footer />
     </div>

@@ -1,43 +1,40 @@
 import { Target, Users, Award, Heart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import JoinUs from '../components/JoinUs';
 
 const About = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const stats = [
-    { value: '5+', label: 'Років на ринку' },
-    { value: '10K+', label: 'Активних користувачів' },
-    { value: '1M+', label: 'Нагадувань надіслано' },
-    { value: '99%', label: 'Задоволених клієнтів' },
+    { value: '5+', label: t('about.stats.years') },
+    { value: '10K+', label: t('about.stats.users') },
+    { value: '1M+', label: t('about.stats.reminders') },
+    { value: '99%', label: t('about.stats.satisfaction') },
   ];
 
   const values = [
     {
       icon: <Target className="w-8 h-8" />,
-      title: 'Наша місія',
-      description:
-        "Зробити управління медикаментами простим та доступним для кожного. Ми віримо, що здоров'я не повинно бути складним.",
+      title: t('about.values.mission.title'),
+      description: t('about.values.mission.description'),
       color: 'blue',
     },
     {
       icon: <Users className="w-8 h-8" />,
-      title: 'Команда',
-      description:
-        "Ми — команда медичних фахівців, розробників та дизайнерів, об'єднаних спільною метою покращити якість життя людей.",
+      title: t('about.values.team.title'),
+      description: t('about.values.team.description'),
       color: 'green',
     },
     {
       icon: <Award className="w-8 h-8" />,
-      title: 'Досвід',
-      description:
-        'Більше 5 років ми допомагаємо людям не забувати про ліки, відстежувати прогрес лікування та спілкуватися з лікарями.',
+      title: t('about.values.experience.title'),
+      description: t('about.values.experience.description'),
       color: 'purple',
     },
     {
       icon: <Heart className="w-8 h-8" />,
-      title: 'Цінності',
-      description:
-        'Конфіденційність, надійність та турбота про користувача — основа нашого підходу до розробки продукту.',
+      title: t('about.values.coreValues.title'),
+      description: t('about.values.coreValues.description'),
       color: 'red',
     },
   ];
@@ -71,16 +68,14 @@ const About = () => {
   return (
     <div id="about" className="bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
-      <section className="py-5 sm:py-20 px-6" id="about">
+      <section className="py-5 sm:py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Про <span className="text-blue-600">Axels Pills</span>
+            {t('about.title')}{' '}
+            <span className="text-blue-600">{t('about.titleBrand')}</span>
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Ми створили Axels Pills, щоб зробити контроль за здоров'ям простішим
-            та доступнішим для кожного. Наша платформа допомагає тисячам людей
-            щодня дотримуватися графіку прийому медикаментів та покращувати
-            якість життя.
+            {t('about.subtitle')}
           </p>
         </div>
       </section>
@@ -108,7 +103,7 @@ const About = () => {
       <section className="py-5 sm:py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-4xl font-bold text-gray-900 text-center mb-12">
-            Що робить нас особливими
+            {t('about.valuesTitle')}
           </h3>
           <div className="grid md:grid-cols-2 gap-8">
             {values.map((value, index) => {
@@ -140,47 +135,17 @@ const About = () => {
       <section className="py-5 sm:py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-4xl font-bold text-gray-900 mb-8">
-            Наша історія
+            {t('about.storyTitle')}
           </h3>
           <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
-            <p>
-              Axels Pills народився в епіцентрі дедлайнів та нескінченних
-              списків справ. Ми помітили, що в сучасному світі людина швидше
-              забуде випити необхідний вітамін чи важливий препарат, ніж
-              перевірити сповіщення в соцмережах.
-            </p>
-            <p>
-              Ми пройшли шлях від особистої замітки в телефоні до
-              інтелектуальної системи, яка бере рутину на себе. Axels Pills - це
-              ваш «зовнішній мозок» для здоров'я. Ми тут, щоб ви могли
-              фокусуватися на житті, а не на графіках прийому.
-            </p>
-            <p>
-              Сьогодні Axels Pills - це не просто додаток, а партнер у вашому
-              здоров'ї. Ми продовжуємо вдосконалювати наші інструменти, додавати
-              нові функції та робити життя наших користувачів легшим щодня.
-            </p>
+            <p>{t('about.story.paragraph1')}</p>
+            <p>{t('about.story.paragraph2')}</p>
+            <p>{t('about.story.paragraph3')}</p>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-5 sm:py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-700">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h3 className="text-4xl font-bold mb-6">
-            Приєднуйтесь до тисяч задоволених користувачів
-          </h3>
-          <p className="text-xl mb-8 text-blue-100">
-            Почніть контролювати своє здоров'я вже сьогодні
-          </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
-          >
-            Зареєструватись
-          </button>
-        </div>
-      </section>
+      <JoinUs />
     </div>
   );
 };

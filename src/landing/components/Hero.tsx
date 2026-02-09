@@ -1,10 +1,14 @@
 import { ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getDate } from '../utils';
+
 interface HeroProps {
   onGetStarted: () => void;
 }
 
 const Hero = ({ onGetStarted }: HeroProps) => {
+  const { t } = useTranslation();
+
   const scrollToAbout = () => {
     const element = document.getElementById('about');
     if (element) {
@@ -18,14 +22,15 @@ const Hero = ({ onGetStarted }: HeroProps) => {
         {/* Left Content */}
         <div className="space-y-8">
           <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-            Ваші ліки
+            {t('hero.title').split(' ').slice(0, 2).join(' ')}
             <br />
-            <span className="text-blue-600">під контролем</span>
+            <span className="text-blue-600">
+              {t('hero.title').split(' ').slice(2).join(' ')}
+            </span>
           </h1>
 
           <p className="text-xl text-gray-600 leading-relaxed">
-            Вказуйте коли приймаєте ліки — вранці, вдень чи ввечері. Завжди
-            знайте, на скільки вистачить запасу.
+            {t('hero.subtitle')}
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -33,14 +38,14 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               onClick={onGetStarted}
               className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             >
-              Почати користування
+              {t('hero.getStarted')}
               <ArrowRight className="w-5 h-5" />
             </button>
             <button
               onClick={scrollToAbout}
               className="bg-white text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200"
             >
-              Дізнатися більше
+              {t('hero.learnMore')}
             </button>
           </div>
 
@@ -48,17 +53,20 @@ const Hero = ({ onGetStarted }: HeroProps) => {
           <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200">
             <div>
               <div className="text-3xl font-bold text-blue-600">5K+</div>
-              <div className="text-sm text-gray-600">Активних користувачів</div>
+              <div className="text-sm text-gray-600">
+                {' '}
+                {t('about.stats.users')}
+              </div>
             </div>
             <div>
               <div className="text-3xl font-bold text-blue-600">10K+</div>
-              <div className="text-sm text-gray-600">Нагадувань щодня</div>
+              <div className="text-sm text-gray-600">
+                {t('about.stats.reminders')}
+              </div>
             </div>
             <div>
               <div className="text-3xl font-bold text-blue-600">98%</div>
-              <div className="text-sm text-gray-600">
-                Вчасно прийнятих ліків
-              </div>
+              <div className="text-sm text-gray-600">{t('hero.onTime')}</div>
             </div>
           </div>
         </div>
@@ -71,22 +79,25 @@ const Hero = ({ onGetStarted }: HeroProps) => {
                 <span className="text-2xl">💊</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Запас ліків</h3>
-                <p className="text-sm text-gray-500">Омега-3</p>
+                <h3 className="font-semibold text-gray-900">
+                  {' '}
+                  {t('hero.pillsReserve')}
+                </h3>
+                <p className="text-sm text-gray-500">{t('hero.omega')}</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Вистачить на</span>
+                <span className="text-gray-600">{t('hero.enough')}</span>
                 <span className="text-2xl font-bold text-blue-600">
-                  14 днів
+                  {t('hero.14days')}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Всього</span>
+                <span className="text-gray-600">{t('hero.total')}</span>
                 <span className="text-lg font-semibold text-gray-900">
-                  30 шт
+                  {t('hero.pieces')}
                 </span>
               </div>
             </div>
@@ -94,32 +105,34 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             <div className="pt-4 space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span className="text-lg">📅</span>
-                <span className="font-semibold">Сьогодні, {getDate()}</span>
+                <span className="font-semibold">
+                  {t('hero.today')}, {getDate()}
+                </span>
               </div>
 
               <div className="space-y-2">
                 <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
                   <div className="text-xs text-yellow-700 font-semibold">
-                    Ранок • 08:00
+                    {t('hero.morning')}
                   </div>
                   <div className="text-sm font-medium mt-1">
-                    Вітамін D • 2000 МО
+                    {t('hero.vitaminD')}
                   </div>
                 </div>
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
                   <div className="text-xs text-blue-700 font-semibold">
-                    День • 14:00
+                    {t('hero.afternoon')}
                   </div>
                   <div className="text-sm font-medium mt-1">
-                    Магній B6 • 1 таб
+                    {t('hero.magnesiumB6')}
                   </div>
                 </div>
                 <div className="bg-purple-50 border-l-4 border-purple-400 p-3 rounded">
                   <div className="text-xs text-purple-700 font-semibold">
-                    Вечір • 21:00
+                    {t('hero.evening')}
                   </div>
                   <div className="text-sm font-medium mt-1">
-                    Мелатонін • 3 мг
+                    {t('hero.melatonin')}
                   </div>
                 </div>
               </div>

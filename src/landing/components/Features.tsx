@@ -1,26 +1,26 @@
 import { Bell, Calendar, BarChart3, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Features = () => {
+  const { t } = useTranslation();
+
   const features = [
     {
       icon: <Bell className="w-8 h-8" />,
-      title: 'Нагадування',
-      description:
-        'Налаштуйте нагадування для кожного препарату. Гнучкий графік, повторення та дозування.',
+      title: t('features.reminder.title'),
+      description: t('features.reminder.description'),
       color: 'blue',
     },
     {
       icon: <Calendar className="w-8 h-8" />,
-      title: 'Графік прийому',
-      description:
-        'Вказуйте час прийому — ранок, день, вечір. Додаток покаже на скільки днів вистачить ваших ліків.',
+      title: t('features.schedule.title'),
+      description: t('features.schedule.description'),
       color: 'green',
     },
     {
       icon: <BarChart3 className="w-8 h-8" />,
-      title: 'Історія та звіти',
-      description:
-        'Детальна статистика прийому. Експортуйте звіти для лікаря та слідкуйте за прогресом лікування.',
+      title: t('features.history.title'),
+      description: t('features.history.description'),
       color: 'purple',
     },
   ];
@@ -53,28 +53,27 @@ const Features = () => {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <Clock className="w-4 h-4" />
-            Розумний графік
+            {t('features.smartSchedule')}
           </div>
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-            Ваш день розписаний
+            {t('features.mainTitle')}
             <br />
-            <span className="text-blue-600">по хвилинах</span>
+            <span className="text-blue-600">
+              {t('features.mainTitleHighlight')}
+            </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Більше не потрібно гадати, чи випили ви ліки. Розподіліть прийом на
-            ранок, день та вечір. Ми підкажемо, коли запаси будуть
-            закінчуватися.
+            {t('features.mainDescription')}
           </p>
         </div>
 
         {/* Features Section */}
         <div className="mb-20">
           <h3 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Все що потрібно
+            {t('features.sectionTitle')}
           </h3>
           <p className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-            Ми створили інструменти, які роблять контроль здоров'я простим та
-            зручним
+            {t('features.sectionDescription')}
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -101,8 +100,6 @@ const Features = () => {
             })}
           </div>
         </div>
-
-      
       </div>
     </section>
   );
