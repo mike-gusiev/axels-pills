@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: Props) {
     return <div className="p-6 text-center">Завантаження…</div>;
   }
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
   return children;
 }

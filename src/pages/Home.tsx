@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Trash2,
@@ -71,6 +72,7 @@ interface AggregatedMedication {
 
 const MedicationSystem = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<Page>('patients');
   const [patients, setPatients] = useState<Patient[]>([]);
 
@@ -499,10 +501,14 @@ const MedicationSystem = () => {
           </h1>
           <button
             onClick={async () => {
-              const { signOut } = await import('firebase/auth');
-              const { auth } = await import('../firebase');
-              await signOut(auth);
-              window.location.href = '/';
+              try {
+                const { signOut } = await import('firebase/auth');
+                const { auth } = await import('../firebase');
+                await signOut(auth);
+                navigate('/', { replace: true });
+              } catch (error) {
+                console.error('Logout error:', error);
+              }
             }}
             className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
           >

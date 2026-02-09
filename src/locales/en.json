@@ -1,0 +1,281 @@
+{
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "navigation": {
+    "login": "Login",
+    "language": "Language",
+    "theme": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark"
+  },
+  "hero": {
+    "title": "Your Medications Under Control",
+    "subtitle": "Never forget to take your medications on time. Axels Pills - your personal health assistant.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "users": "Active Users",
+    "pillsTracked": "Tracked Pills",
+    "onTime": "Timely medication taken",
+    "pillsReserve": "Pill Supply",
+    "omega": "Omega-3",
+    "enough": "Lasts for",
+    "14days": "14 days",
+    "total": "Total",
+    "pieces": "30 pcs",
+    "today": "Today",
+    "morning": "Morning • 08:00",
+    "afternoon": "Afternoon • 14:00",
+    "evening": "Evening • 21:00",
+    "vitaminD": "Vitamin D • 2000 IU",
+    "magnesiumB6": "Magnesium B6 • 100 tabs",
+    "melatonin": "Melatonin • 3 mg"
+  },
+  "features": {
+    "title": "Why Choose Axels Pills?",
+    "smartSchedule": "Smart Schedule",
+    "mainTitle": "Your Day is Scheduled",
+    "mainTitleHighlight": "by the Minute",
+    "mainDescription": "No more guessing if you've taken your medications. Split intake into morning, afternoon and evening. We'll let you know when supplies are running low.",
+    "sectionTitle": "Everything You Need",
+    "sectionDescription": "We've created tools that make health control simple and convenient",
+    "reminder": {
+      "title": "Reminders",
+      "description": "Set up reminders for each medication. Flexible schedule, repetitions and dosage."
+    },
+    "schedule": {
+      "title": "Medication Schedule",
+      "description": "Specify intake time - morning, afternoon, evening. The app will show how many days your medications will last."
+    },
+    "history": {
+      "title": "History and Reports",
+      "description": "Detailed intake statistics. Export reports for your doctor and track treatment progress."
+    },
+    "reminders": {
+      "title": "Smart Reminders",
+      "description": "Receive medication reminders at the time convenient for you"
+    },
+    "tracking": {
+      "title": "Progress Tracking",
+      "description": "Control your medication schedule and track history"
+    },
+    "management": {
+      "title": "Medication Management",
+      "description": "Keep all medication information in one place"
+    }
+  },
+  "about": {
+    "title": "About",
+    "titleBrand": "Axels Pills",
+    "subtitle": "We created Axels Pills to make health management simpler and more accessible for everyone. Our platform helps thousands of people daily to follow their medication schedule and improve their quality of life.",
+    "stats": {
+      "years": "Years on Market",
+      "hoursEconomized": "Hours saved",
+      "reminders": "Reminders Sent",
+      "satisfaction": "Satisfied Clients"
+    },
+    "valuesTitle": "What Makes Us Special",
+    "values": {
+      "mission": {
+        "title": "Our Mission",
+        "description": "Make medication management simple and accessible for everyone. We believe that health should not be complicated."
+      },
+      "team": {
+        "title": "Team",
+        "description": "We are a team of medical professionals, developers and designers united by the common goal of improving people's quality of life."
+      },
+      "experience": {
+        "title": "Experience",
+        "description": "For more than 5 years we have been helping people not to forget about medications, track treatment progress and communicate with doctors."
+      },
+      "coreValues": {
+        "title": "Values",
+        "description": "Privacy, reliability and user care are the foundation of our approach to product development."
+      }
+    },
+    "storyTitle": "Our Story",
+    "story": {
+      "paragraph1": "Axels Pills was born in the epicenter of deadlines and endless to-do lists. We noticed that in the modern world, a person is more likely to forget to take a necessary vitamin or important medication than to check social media notifications.",
+      "paragraph2": "We went from a personal note on the phone to an intelligent system that takes the routine on itself. Axels Pills is your 'external brain' for health. We are here so you can focus on life, not on schedules.",
+      "paragraph3": "Today Axels Pills is not just an app, but a partner in your health. We continue to improve our tools, add new features and make our users' lives easier every day."
+    },
+    "ctaTitle": "Join Thousands of Satisfied Users",
+    "ctaSubtitle": "Start controlling your health today",
+    "ctaButton": "Sign Up"
+  },
+  "footer": {
+    "contacts": "Contacts",
+    "email": "Email",
+    "brand": "Axels Pills",
+    "description": "Your reliable assistant in medication control",
+    "madeIn": "Made in Ukraine",
+    "privacy": "Privacy Policy",
+    "rights": "© 2026 Axels Pills. All rights reserved"
+  },
+  "privacy": {
+    "titlePolicy": "Privacy ",
+    "titleConfidentiality": "Policy",
+    "subtitle": "Your privacy is important to us",
+    "lastUpdated": "Last updated: February 6, 2026",
+    "intro": {
+      "title": "Introduction",
+      "paragraph1": "Welcome to Axels Pills! We value your trust and take the protection of your personal information seriously. This privacy policy describes what information we collect, how we use it and protect it.",
+      "paragraph2": "By using our service, you agree to the terms of this privacy policy. If you have any questions, please contact us."
+    },
+    "keyPoints": {
+      "encryption": {
+        "title": "Data Encryption",
+        "description": "All your medical data is stored in encrypted form"
+      },
+      "access": {
+        "title": "Access Control",
+        "description": "Only you have access to your medical records"
+      },
+      "gdpr": {
+        "title": "GDPR Compliance",
+        "description": "We comply with all European legislation requirements"
+      },
+      "transparency": {
+        "title": "Transparency",
+        "description": "You always know what data we collect and why"
+      }
+    },
+    "section1": {
+      "title": "1. What Information We Collect",
+      "personal": "Personal data:",
+      "personalDesc": "name, email, phone (optional)",
+      "medical": "Medical data:",
+      "medicalDesc": "information about medications, intake schedule, reminders, dosage",
+      "technical": "Technical data:",
+      "technicalDesc": "IP address, device type, browser version to improve service",
+      "usage": "Usage data:",
+      "usageDesc": "how you use our app to improve functionality"
+    },
+    "section2": {
+      "title": "2. How We Use Your Information",
+      "item1": "Providing core app functionality (reminders, schedule)",
+      "item2": "Improving service quality and user experience",
+      "item3": "Sending important service messages",
+      "item4": "Ensuring security and preventing fraud",
+      "item5": "Compliance with legal requirements"
+    },
+    "section3": {
+      "title": "3. Protecting Your Data",
+      "intro": "We use advanced security technologies to protect your data:",
+      "item1": "SSL/TLS encryption for data transmission",
+      "item2": "AES-256 encryption for data storage",
+      "item3": "Regular security audits",
+      "item4": "Two-factor authentication (optional)",
+      "item5": "Data backup",
+      "item6": "Limited employee access to data"
+    },
+    "section4": {
+      "title": "4. Sharing Information with Third Parties",
+      "intro": "We DO NOT sell your personal data to third parties. We may share information only in the following cases:",
+      "notSell": "DO NOT sell",
+      "item1": "With your explicit consent",
+      "item2": "With service providers who help us provide services (cloud storage, analytics)",
+      "item3": "If required by law or court order",
+      "item4": "To protect users' rights and security"
+    },
+    "section5": {
+      "title": "5. Your Rights",
+      "intro": "Under GDPR and Ukrainian law, you have the right to:",
+      "item1": "Access to your personal data",
+      "item2": "Correction of inaccurate information",
+      "item3": "Deletion of your data ('right to be forgotten')",
+      "item4": "Restriction of data processing",
+      "item5": "Data portability",
+      "item6": "Object to data processing",
+      "item7": "Withdraw consent to processing at any time"
+    },
+    "section6": {
+      "title": "6. Cookies and Tracking Technologies",
+      "intro": "We use cookies to:",
+      "item1": "Remember your settings",
+      "item2": "Analyze site usage",
+      "item3": "Improve functionality",
+      "outro": "You can control cookies through your browser settings."
+    },
+    "section7": {
+      "title": "7. Data Storage and Deletion",
+      "paragraph1": "We store your data as long as you use the service. You can delete your account at any time through app settings.",
+      "paragraph2": "After account deletion:",
+      "item1": "Personal data is deleted within 30 days",
+      "item2": "Backups are deleted within 90 days",
+      "item3": "Anonymized data may be retained for statistics"
+    },
+    "section8": {
+      "title": "8. Children's Safety",
+      "content": "Our service is intended for users aged 13 and older. We do not knowingly collect data from children under 13. If you learn that a child has provided us with their data, please contact us."
+    },
+    "section9": {
+      "title": "9. International Data Transfer",
+      "content": "Your data is stored on servers in the European Union. If data is transferred outside the EU, we ensure an appropriate level of protection in accordance with GDPR."
+    },
+    "section10": {
+      "title": "10. Changes to Privacy Policy",
+      "paragraph1": "We may update this policy from time to time. We will notify you of significant changes:",
+      "item1": "Via email",
+      "item2": "Via push notifications in the app",
+      "item3": "Via banner on the website",
+      "paragraph2": "We recommend periodically reviewing this page for current information."
+    },
+    "contact": {
+      "title": "Contacts",
+      "intro": "If you have questions about the privacy policy or data processing:",
+      "email": "Email for privacy questions:",
+      "general": "General questions:",
+      "address": "Address: Kyiv, Ukraine"
+    },
+    "sections": {
+      "collection": {
+        "title": "What Data We Collect",
+        "content": "We collect personal information you provide during registration (name, email, phone), as well as data about medications and their intake schedule. This information is necessary to provide you with personalized service."
+      },
+      "usage": {
+        "title": "How We Use Your Data",
+        "content": "Your data is used exclusively for providing services: sending reminders, tracking medication schedules and improving service quality. We never sell your personal information to third parties."
+      },
+      "protection": {
+        "title": "How We Protect Your Data",
+        "content": "We use modern encryption and data protection methods. All data is stored on secure servers with limited access. We regularly conduct security audits."
+      },
+      "sharing": {
+        "title": "Data Sharing with Third Parties",
+        "content": "We do not share your personal data with third parties without your consent, except as required by law. We may share anonymized data for statistical research."
+      },
+      "rights": {
+        "title": "Your Rights",
+        "content": "You have the right to access your data, correct or delete it. You can also withdraw consent for personal data processing at any time by contacting us."
+      },
+      "cookies": {
+        "title": "Cookie Usage",
+        "content": "We use cookies to improve website performance and personalize content. You can configure cookie usage in your browser settings."
+      },
+      "retention": {
+        "title": "Data Retention",
+        "content": "We store your data as long as you use our service. After deleting your account, your personal data will be deleted within 30 days."
+      },
+      "changes": {
+        "title": "Policy Changes",
+        "content": "We may update this privacy policy from time to time. We will notify you of significant changes via email or app notifications."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "content": "If you have questions about our privacy policy or data processing, contact us at: privacy@axelspills.com"
+      }
+    }
+  }
+}
