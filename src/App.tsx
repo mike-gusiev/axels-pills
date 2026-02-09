@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Home, Login, Register } from './pages/index';
 import { Landing, Privacy } from './landing';
@@ -7,6 +13,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 function LandingOrHome() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -20,7 +27,7 @@ function LandingOrHome() {
     return <Navigate to="/home" replace />;
   }
 
-  return <Landing onGetStarted={() => (window.location.href = '/register')} />;
+  return <Landing onGetStarted={() => navigate('/register')} />;
 }
 
 export default function App() {

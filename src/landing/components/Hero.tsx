@@ -43,7 +43,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             </button>
             <button
               onClick={scrollToAbout}
-              className="bg-white text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200"
+              className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border-2 border-gray-200 dark:border-gray-600"
             >
               {t('hero.learnMore')}
             </button>
