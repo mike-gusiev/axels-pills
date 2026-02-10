@@ -1,4 +1,5 @@
 {
+  "_locale": "uk-UA",
   "months": {
     "january": "січня",
     "february": "лютого",
@@ -64,6 +65,73 @@
         "passwordMismatch": "Паролі не співпадають",
         "default": "Сталася помилка. Спробуйте ще раз"
       }
+    }
+  },
+  "home": {
+    "logout": "Вийти",
+    "tabs": {
+      "patients": "Пацієнти",
+      "medications": "Препарати",
+      "history": "Історія"
+    },
+    "patients": {
+      "addPatient": "Додати пацієнта",
+      "patientName": "ПІБ пацієнта",
+      "add": "Додати",
+      "noPatients": "Пацієнти не додані",
+      "medicationName": "Назва препарата",
+      "pillsCount": "К-ть таблеток",
+      "noPrescribed": "Препарати не призначені",
+      "remaining": "Залишилося",
+      "enoughFor": "Вистачить на",
+      "days": "дн.",
+      "tabs": "таб.",
+      "schedule": "Графік прийому",
+      "morning": "Вранці",
+      "afternoon": "Вдень",
+      "evening": "Ввечері",
+      "take": "Приймати",
+      "perMonth": "В місяць",
+      "notAssigned": "не назначено",
+      "urgentRefill": "Терміново поповнити!",
+      "endingSoon": "Скоро закінчиться",
+      "unbindFromPatient": "Відв'язати від пацієнта"
+    },
+    "medications": {
+      "date": "Дата",
+      "notifications": "Сповіщення",
+      "criticalLevel": "Критичний рівень запасів:",
+      "endingSoon": "Скоро закінчиться:",
+      "allMedications": "Всі препарати",
+      "medicationName": "Назва препарата",
+      "totalRemaining": "Загальний залишок",
+      "dailyConsumption": "Витрата на день",
+      "daysRemaining": "Вистачить на днів",
+      "patients": "Приймають пацієнти",
+      "status": "Статус",
+      "actions": "Дії",
+      "critical": "Критичний",
+      "warning": "Попередження",
+      "normal": "Норма",
+      "purchased": "Купили (таб.)",
+      "noMedications": "Препарати не додані"
+    },
+    "history": {
+      "title": "Історія операцій",
+      "recordsFound": "Знайдено записів:",
+      "quantity": "Кількість:",
+      "notes": "Примітки:",
+      "addNote": "Додайте примітку…",
+      "save": "Зберегти",
+      "cancel": "Скасувати",
+      "edit": "Редагувати",
+      "delete": "Видалити",
+      "deleteConfirm": "Видалити операцію? Загальну кількість буде зменшено на вказану кількість.",
+      "negativeQuantity": "Кількість не може бути від'ємною",
+      "saveError": "Помилка збереження",
+      "deleteError": "Помилка видалення",
+      "addedToast": "Додано +{{count}} таб. до «{{name}}»",
+      "addFailed": "Не вдалося додати кількість"
     }
   },
   "hero": {

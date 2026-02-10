@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   Trash2,
@@ -74,6 +75,7 @@ interface AggregatedMedication {
 const MedicationSystem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState<Page>('patients');
   const [patients, setPatients] = useState<Patient[]>([]);
 
@@ -377,10 +379,13 @@ const MedicationSystem = () => {
 
   const getScheduleText = (medication: PatientMedication): string => {
     const times: string[] = [];
-    if (medication.morning) times.push('вранці');
-    if (medication.afternoon) times.push('вдень');
-    if (medication.evening) times.push('ввечері');
-    return times.length > 0 ? times.join(', ') : 'не назначено';
+    if (medication.morning)
+      times.push(t('home.patients.morning').toLowerCase());
+    if (medication.afternoon)
+      times.push(t('home.patients.afternoon').toLowerCase());
+    if (medication.evening)
+      times.push(t('home.patients.evening').toLowerCase());
+    return times.length > 0 ? times.join(', ') : t('home.patients.notAssigned');
   };
 
   const getDailyConsumption = (medication: PatientMedication): number => {
@@ -460,15 +465,17 @@ const MedicationSystem = () => {
         quantity: q,
         notes: '',
       });
-      showToast(`Додано +${q} таб. до «${med.name}»`);
-    } catch (e: any) {
-      alert(e?.message ?? 'Не вдалося додати кількість');
+      showToast(t('home.history.addedToast', { count: q, name: med.name }));
+    } catch (e: unknown) {
+      const error = e as { message?: string };
+      alert(error?.message ?? t('home.history.addFailed'));
     }
   };
 
   const formatDate = (date: Date | string): string => {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('uk-UA', {
+    const locale = t('_locale', 'uk-UA'); // Получаем локаль из переводов
+    return d.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -493,8 +500,8 @@ const MedicationSystem = () => {
   };
 
   const Header = () => (
-    <div className="bg-white shadow-lg mb-6">
-      <div className="max-w-6xl mx-auto px-6 py-4">
+    <div className="bg-white shadow-lg mb-6 px-6 py-4">
+      <div className="mx-auto ">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center">
             <Pill className="mr-3 text-blue-600" />
@@ -514,45 +521,45 @@ const MedicationSystem = () => {
             }}
             className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
           >
-            Вийти
+            {t('home.logout')}
           </button>
         </div>
-        <nav className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setCurrentPage('patients')}
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              currentPage === 'patients'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <User className="w-4 h-4 inline-block mr-2" />
-            Пацієнти
-          </button>
-          <button
-            onClick={() => setCurrentPage('medications')}
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              currentPage === 'medications'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Package className="w-4 h-4 inline-block mr-2" />
-            Препарати
-          </button>
-          <button
-            onClick={() => setCurrentPage('history')}
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              currentPage === 'history'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <History className="w-4 h-4 inline-block mr-2" />
-            Історія
-          </button>
-        </nav>
       </div>
+      <nav className="flex flex-wrap gap-2 ">
+        <button
+          onClick={() => setCurrentPage('patients')}
+          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+            currentPage === 'patients'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <User className="w-4 h-4 inline-block mr-2" />
+          {t('home.tabs.patients')}
+        </button>
+        <button
+          onClick={() => setCurrentPage('medications')}
+          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+            currentPage === 'medications'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <Package className="w-4 h-4 inline-block mr-2" />
+          {t('home.tabs.medications')}
+        </button>
+        <button
+          onClick={() => setCurrentPage('history')}
+          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+            currentPage === 'history'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <History className="w-4 h-4 inline-block mr-2" />
+          {t('home.tabs.history')}
+        </button>
+      </nav>
     </div>
   );
 
@@ -561,13 +568,13 @@ const MedicationSystem = () => {
       {/* Добавление нового пациента */}
       <div className="bg-blue-50 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-3 text-blue-800">
-          Додати пацієнта
+          {t('home.patients.addPatient')}
         </h2>
         <div className="flex flex-wrap gap-3">
           <input
             type="text"
             name="patientName"
-            placeholder="ПІБ пацієнта"
+            placeholder={t('home.patients.patientName')}
             value={newPatientName}
             onChange={e => setNewPatientName(e.target.value)}
             className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -577,7 +584,7 @@ const MedicationSystem = () => {
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Додати
+            {t('home.patients.add')}
           </button>
         </div>
       </div>
@@ -607,7 +614,7 @@ const MedicationSystem = () => {
               <div className="flex gap-3 flex-wrap">
                 <input
                   type="text"
-                  placeholder="Назва препарата"
+                  placeholder={t('home.patients.medicationName')}
                   value={selectedPatient === patient.id ? newMedication : ''}
                   onChange={e => {
                     setNewMedication(e.target.value);
@@ -617,7 +624,7 @@ const MedicationSystem = () => {
                 />
                 <input
                   type="number"
-                  placeholder="К-ть таблеток"
+                  placeholder={t('home.patients.pillsCount')}
                   value={
                     selectedPatient === patient.id ? newMedicationPills : ''
                   }
@@ -632,7 +639,7 @@ const MedicationSystem = () => {
                   className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
                 >
                   <Pill className="w-4 h-4 mr-1" />
-                  Додати
+                  {t('home.patients.add')}
                 </button>
               </div>
             </div>
@@ -661,14 +668,17 @@ const MedicationSystem = () => {
                         </h4>
                         <div className="flex flex-wrap items-center mt-1 gap-2">
                           <span className="text-sm text-gray-600">
-                            Залишилося:{' '}
-                            <strong>{medication.pillsRemaining} таб.</strong>
+                            {t('home.patients.remaining')}:{' '}
+                            <strong>
+                              {medication.pillsRemaining}{' '}
+                              {t('home.patients.tabs')}
+                            </strong>
                           </span>
                           <span className="text-sm text-gray-600">
-                            Вистачить на:{' '}
+                            {t('home.patients.enoughFor')}:{' '}
                             <strong>
                               {daysRemaining === Infinity ? '∞' : daysRemaining}{' '}
-                              дн.
+                              {t('home.patients.days')}
                             </strong>
                           </span>
                           {warningLevel !== 'normal' && (
@@ -677,8 +687,8 @@ const MedicationSystem = () => {
                             >
                               <AlertTriangle className="w-3 h-3 mr-1" />
                               {warningLevel === 'critical'
-                                ? 'Терміново поповнити!'
-                                : 'Скоро закінчиться'}
+                                ? t('home.patients.urgentRefill')
+                                : t('home.patients.endingSoon')}
                             </span>
                           )}
                         </div>
@@ -689,7 +699,7 @@ const MedicationSystem = () => {
                           removeMedication(patient.id, medication.id)
                         }
                         className="text-red-500 hover:text-red-700 p-1"
-                        title="Відвʼязати від пацієнта"
+                        title={t('home.patients.unbindFromPatient')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -698,7 +708,7 @@ const MedicationSystem = () => {
                     <div className="flex items-center mb-2">
                       <Clock className="w-4 h-4 mr-2 text-gray-600" />
                       <span className="text-sm text-gray-600 font-medium">
-                        Графік прийому:
+                        {t('home.patients.schedule')}:
                       </span>
                     </div>
 
@@ -706,9 +716,9 @@ const MedicationSystem = () => {
                       {(['morning', 'afternoon', 'evening'] as TimeOfDay[]).map(
                         time => {
                           const labels: Record<TimeOfDay, string> = {
-                            morning: 'Вранці',
-                            afternoon: 'Вдень',
-                            evening: 'Ввечері',
+                            morning: t('home.patients.morning'),
+                            afternoon: t('home.patients.afternoon'),
+                            evening: t('home.patients.evening'),
                           };
 
                           return (
@@ -749,10 +759,12 @@ const MedicationSystem = () => {
                     </div>
 
                     <div className="mt-2 sm:ml-6 text-sm text-gray-600">
-                      <strong>Приймати:</strong> {getScheduleText(medication)}
+                      <strong>{t('home.patients.take')}:</strong>{' '}
+                      {getScheduleText(medication)}
                       <span className="ml-4">
-                        <strong>В місяць:</strong> ~
-                        {getMonthlyConsumption(medication)} таб.
+                        <strong>{t('home.patients.perMonth')}:</strong> ~
+                        {getMonthlyConsumption(medication)}{' '}
+                        {t('home.patients.tabs')}
                       </span>
                     </div>
                   </div>
@@ -762,7 +774,7 @@ const MedicationSystem = () => {
               {(!medsByPatient[patient.id] ||
                 medsByPatient[patient.id].length === 0) && (
                 <div className="text-gray-500 text-center py-4 italic">
-                  Препарати не призначені
+                  {t('home.patients.noPrescribed')}
                 </div>
               )}
             </div>
@@ -773,7 +785,7 @@ const MedicationSystem = () => {
       {patients.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           <User className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-lg">Пацієнти не додані</p>
+          <p className="text-lg">{t('home.patients.noPatients')}</p>
         </div>
       )}
     </div>
@@ -794,7 +806,9 @@ const MedicationSystem = () => {
         <div className="mt-2">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="w-5 h-5 text-blue-600" />
-            <span className="text-sm text-gray-700">Дата:</span>
+            <span className="text-sm text-gray-700">
+              {t('home.medications.date')}:
+            </span>
             <span className="text-sm text-blue-600">
               {formatDate(selectedDate)}
             </span>
@@ -822,13 +836,13 @@ const MedicationSystem = () => {
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
-              Сповіщення
+              {t('home.medications.notifications')}
             </h2>
 
             {criticalMedications.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-red-800 mb-2">
-                  Критичний рівень запасів:
+                  {t('home.medications.criticalLevel')}
                 </h3>
                 <div className="space-y-2">
                   {criticalMedications.map((med, index) => (
@@ -837,9 +851,11 @@ const MedicationSystem = () => {
                       className="bg-red-50 border-l-4 border-red-400 p-3 rounded"
                     >
                       <p className="text-red-800">
-                        <strong>{med.name}</strong> - залишилося{' '}
-                        {med.totalPills} таб. (вистачить на {med.daysRemaining}{' '}
-                        дн.)
+                        <strong>{med.name}</strong> -{' '}
+                        {t('home.patients.remaining').toLowerCase()}{' '}
+                        {med.totalPills} {t('home.patients.tabs')} (
+                        {t('home.patients.enoughFor').toLowerCase()}{' '}
+                        {med.daysRemaining} {t('home.patients.days')})
                       </p>
                     </div>
                   ))}
@@ -850,7 +866,7 @@ const MedicationSystem = () => {
             {warningMedications.length > 0 && (
               <div>
                 <h3 className="font-medium text-yellow-800 mb-2">
-                  Скоро закінчиться:
+                  {t('home.medications.endingSoon')}
                 </h3>
                 <div className="space-y-2">
                   {warningMedications.map((med, index) => (
@@ -859,9 +875,11 @@ const MedicationSystem = () => {
                       className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded"
                     >
                       <p className="text-yellow-800">
-                        <strong>{med.name}</strong> - залишилося{' '}
-                        {med.totalPills} таб. (вистачить на {med.daysRemaining}{' '}
-                        дн.)
+                        <strong>{med.name}</strong> -{' '}
+                        {t('home.patients.remaining').toLowerCase()}{' '}
+                        {med.totalPills} {t('home.patients.tabs')} (
+                        {t('home.patients.enoughFor').toLowerCase()}{' '}
+                        {med.daysRemaining} {t('home.patients.days')})
                       </p>
                     </div>
                   ))}
@@ -875,7 +893,7 @@ const MedicationSystem = () => {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
             <Package className="w-6 h-6 mr-2 text-green-600" />
-            Всі препарати
+            {t('home.medications.allMedications')}
           </h2>
 
           <div className="overflow-x-auto">
@@ -883,22 +901,26 @@ const MedicationSystem = () => {
               <thead>
                 <tr className="bg-gray-50 border-b">
                   <th className="text-left p-3 font-semibold">
-                    Назва препарата
+                    {t('home.medications.medicationName')}
                   </th>
                   <th className="text-left p-3 font-semibold">
-                    Загальний залишок
+                    {t('home.medications.totalRemaining')}
                   </th>
                   <th className="text-left p-3 font-semibold">
-                    Витрата на день
+                    {t('home.medications.dailyConsumption')}
                   </th>
                   <th className="text-left p-3 font-semibold">
-                    Вистачить на днів
+                    {t('home.medications.daysRemaining')}
                   </th>
                   <th className="text-left p-3 font-semibold">
-                    Приймають пацієнти
+                    {t('home.medications.patients')}
                   </th>
-                  <th className="text-left p-3 font-semibold">Статус</th>
-                  <th className="text-left p-3 font-semibold">Дії</th>
+                  <th className="text-left p-3 font-semibold">
+                    {t('home.medications.status')}
+                  </th>
+                  <th className="text-left p-3 font-semibold">
+                    {t('home.medications.actions')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -910,9 +932,11 @@ const MedicationSystem = () => {
                   return (
                     <tr key={index} className="border-b hover:bg-gray-50">
                       <td className="p-3 font-medium">{medication.name}</td>
-                      <td className="p-3">{medication.totalPills} таб.</td>
                       <td className="p-3">
-                        {medication.dailyConsumption} таб.
+                        {medication.totalPills} {t('home.patients.tabs')}
+                      </td>
+                      <td className="p-3">
+                        {medication.dailyConsumption} {t('home.patients.tabs')}
                       </td>
                       <td className="p-3">
                         {medication.daysRemaining === Infinity
@@ -930,17 +954,17 @@ const MedicationSystem = () => {
                           className={`px-2 py-1 rounded-full text-xs font-medium ${getWarningColor(warningLevel)}`}
                         >
                           {warningLevel === 'critical'
-                            ? 'Критичний'
+                            ? t('home.medications.critical')
                             : warningLevel === 'warning'
-                              ? 'Попередження'
-                              : 'Норма'}
+                              ? t('home.medications.warning')
+                              : t('home.medications.normal')}
                         </span>
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
-                            placeholder="Купили (таб.)"
+                            placeholder={t('home.medications.purchased')}
                             value={buyQty[medication.id as string] ?? ''}
                             onChange={e =>
                               setBuyQty(prev => ({
@@ -990,7 +1014,7 @@ const MedicationSystem = () => {
           {allMedications.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg">Препарати не додані</p>
+              <p className="text-lg">{t('home.medications.noMedications')}</p>
             </div>
           )}
         </div>
@@ -1005,10 +1029,10 @@ const MedicationSystem = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
               <History className="w-6 h-6 mr-2 text-green-600" />
-              Історія операцій
+              {t('home.history.title')}
             </h2>
             <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-              Знайдено записів: {purchases.length}
+              {t('home.history.recordsFound')} {purchases.length}
             </div>
           </div>
 
@@ -1028,7 +1052,7 @@ const MedicationSystem = () => {
                       <div className="mt-3 space-y-3">
                         <div className="flex items-center gap-2">
                           <label className="text-sm text-gray-600">
-                            Кількість:
+                            {t('home.history.quantity')}
                           </label>
                           <input
                             type="number"
@@ -1045,7 +1069,7 @@ const MedicationSystem = () => {
                         </div>
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">
-                            Примітки:
+                            {t('home.history.notes')}
                           </label>
                           <input
                             type="text"
@@ -1057,7 +1081,7 @@ const MedicationSystem = () => {
                               }))
                             }
                             className="w-full p-2 text-sm border rounded"
-                            placeholder="Додайте примітку…"
+                            placeholder={t('home.history.addNote')}
                           />
                         </div>
 
@@ -1067,7 +1091,7 @@ const MedicationSystem = () => {
                             onClick={async () => {
                               if (!user) return;
                               if (editBuff.quantity < 0) {
-                                alert('Кількість не може бути від’ємною');
+                                alert(t('home.history.quantityNegative'));
                                 return;
                               }
                               try {
@@ -1077,22 +1101,25 @@ const MedicationSystem = () => {
                                   notes: editBuff.notes,
                                 });
                                 setEditing(null);
-                              } catch (err: any) {
-                                alert(err?.message ?? 'Помилка збереження');
+                              } catch (err: unknown) {
+                                const error = err as { message?: string };
+                                alert(
+                                  error?.message ?? t('home.history.saveError')
+                                );
                               } finally {
                                 setSavingEdit(false);
                               }
                             }}
                             className="px-3 py-1 text-sm bg-green-600 text-white rounded disabled:opacity-60"
                           >
-                            Зберегти
+                            {t('home.history.save')}
                           </button>
                           <button
                             disabled={savingEdit}
                             onClick={() => setEditing(null)}
                             className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded"
                           >
-                            Скасувати
+                            {t('home.history.cancel')}
                           </button>
                         </div>
                       </div>
@@ -1100,7 +1127,7 @@ const MedicationSystem = () => {
                       <>
                         <div className="mt-1">
                           <span className="text-sm text-gray-600">
-                            Кількість:{' '}
+                            {t('home.history.quantity')}
                           </span>
                           <span className="font-semibold text-green-700">
                             +{p.quantity}
@@ -1108,7 +1135,7 @@ const MedicationSystem = () => {
                         </div>
                         {p.notes && (
                           <div className="text-sm text-gray-700 mt-1">
-                            Примітки: {p.notes}
+                            {t('home.history.notes')} {p.notes}
                           </div>
                         )}
                       </>
@@ -1127,7 +1154,7 @@ const MedicationSystem = () => {
                         }}
                         className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
                       >
-                        Редагувати
+                        {t('home.history.edit')}
                       </button>
                     )}
                     <button
@@ -1135,20 +1162,25 @@ const MedicationSystem = () => {
                         if (!user) return;
                         if (
                           confirm(
-                            'Видалити покупку? Склад буде зменшено на цю кількість.'
+                            t('home.history.deleteConfirm', {
+                              quantity: p.quantity,
+                            })
                           )
                         ) {
                           try {
                             await deletePurchase(user.uid, p);
                             if (editing?.id === p.id) setEditing(null);
-                          } catch (err: any) {
-                            alert(err?.message ?? 'Помилка видалення');
+                          } catch (err: unknown) {
+                            const error = err as { message?: string };
+                            alert(
+                              error?.message ?? t('home.history.deleteError')
+                            );
                           }
                         }
                       }}
                       className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
                     >
-                      Видалити
+                      {t('home.history.delete')}
                     </button>
                   </div>
                 </div>
