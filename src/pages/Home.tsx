@@ -810,7 +810,7 @@ const MedicationSystem = () => {
         <div className="mt-2">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="w-5 h-5 text-blue-600" />
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-white">
               {t('home.medications.date')}:
             </span>
             <span className="text-sm text-blue-600">
@@ -845,7 +845,7 @@ const MedicationSystem = () => {
 
             {criticalMedications.length > 0 && (
               <div className="mb-4">
-                <h3 className="font-medium text-red-800 mb-2">
+                <h3 className="font-medium text-red-800 mb-2 dark:text-red-400">
                   {t('home.medications.criticalLevel')}
                 </h3>
                 <div className="space-y-2">
@@ -904,25 +904,25 @@ const MedicationSystem = () => {
             <table className="w-full table-auto">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-700 border-b">
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.medicationName')}
                   </th>
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.totalRemaining')}
                   </th>
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.dailyConsumption')}
                   </th>
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.daysRemaining')}
                   </th>
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.patients')}
                   </th>
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.status')}
                   </th>
-                  <th className="text-left p-3 font-semibold">
+                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
                     {t('home.medications.actions')}
                   </th>
                 </tr>
@@ -934,20 +934,25 @@ const MedicationSystem = () => {
                   );
 
                   return (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="p-3 font-medium">{medication.name}</td>
-                      <td className="p-3">
+                    <tr
+                      key={index}
+                      className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      <td className="p-3 font-medium text-gray-800 dark:text-white">
+                        {medication.name}
+                      </td>
+                      <td className="p-3 text-gray-800 dark:text-white">
                         {medication.totalPills} {t('home.patients.tabs')}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 text-gray-800 dark:text-white">
                         {medication.dailyConsumption} {t('home.patients.tabs')}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 text-gray-800 dark:text-white">
                         {medication.daysRemaining === Infinity
                           ? '∞'
                           : medication.daysRemaining}
                       </td>
-                      <td className="p-3 text-sm text-gray-600">
+                      <td className="p-3 text-sm text-gray-600 dark:text-gray-300">
                         {medication.patients
                           .map(pid => patientNameById[pid])
                           .filter(Boolean)
@@ -1035,7 +1040,7 @@ const MedicationSystem = () => {
               <History className="w-6 h-6 mr-2 text-green-600" />
               {t('home.history.title')}
             </h2>
-            <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+            <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
               {t('home.history.recordsFound')} {purchases.length}
             </div>
           </div>
@@ -1045,17 +1050,17 @@ const MedicationSystem = () => {
               <div key={p.id} className="border rounded-lg p-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start">
                   <div className="flex-1">
-                    <div className="font-semibold text-lg">
+                    <div className="font-semibold text-lg dark:text-white">
                       {p.medicationName}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 dark:text-white">
                       {new Date(p.timestamp).toLocaleString('uk-UA')}
                     </div>
 
                     {editing?.id === p.id ? (
                       <div className="mt-3 space-y-3">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm text-gray-600">
+                          <label className="text-sm text-gray-600 dark:text-white">
                             {t('home.history.quantity')}
                           </label>
                           <input
@@ -1121,7 +1126,7 @@ const MedicationSystem = () => {
                           <button
                             disabled={savingEdit}
                             onClick={() => setEditing(null)}
-                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800 dark:text-white rounded"
+                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800  rounded"
                           >
                             {t('home.history.cancel')}
                           </button>
@@ -1130,7 +1135,7 @@ const MedicationSystem = () => {
                     ) : (
                       <>
                         <div className="mt-1">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-gray-600 dark:text-white">
                             {t('home.history.quantity')}
                           </span>
                           <span className="font-semibold text-green-700">
