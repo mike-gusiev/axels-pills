@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import '../styles/datepicker-dark.css';
 import {
   subscribePurchases,
   addPurchase,
@@ -919,7 +920,7 @@ const MedicationSystem = () => {
 
             {warningMedications.length > 0 && (
               <div>
-                <h3 className="font-medium text-yellow-800 mb-2">
+                <h3 className="font-medium text-yellow-800 dark:text-yellow-400 mb-2">
                   {t('home.medications.endingSoon')}
                 </h3>
                 <div className="space-y-2">
