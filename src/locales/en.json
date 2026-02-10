@@ -69,6 +69,7 @@
   },
   "home": {
     "logout": "Log Out",
+    "settings": "Settings",
     "tabs": {
       "patients": "Patients",
       "medications": "Medications",

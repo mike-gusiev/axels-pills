@@ -69,6 +69,7 @@
   },
   "home": {
     "logout": "Вийти",
+    "settings": "Налаштування",
     "tabs": {
       "patients": "Пацієнти",
       "medications": "Препарати",
