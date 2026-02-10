@@ -28,6 +28,7 @@ import {
   type Purchase,
 } from '../services/userHistory';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 
 import { db } from '../firebase';
 import {
@@ -474,7 +475,7 @@ const MedicationSystem = () => {
 
   const formatDate = (date: Date | string): string => {
     const d = typeof date === 'string' ? new Date(date) : date;
-    const locale = t('_locale', 'uk-UA'); // Получаем локаль из переводов
+    const locale = t('_locale', 'uk-UA');
     return d.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'long',
@@ -500,29 +501,32 @@ const MedicationSystem = () => {
   };
 
   const Header = () => (
-    <div className="bg-white shadow-lg mb-6 px-6 py-4">
+    <div className="bg-white dark:bg-gray-800 shadow-lg mb-6 px-6 py-4">
       <div className="mx-auto ">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center">
-            <Pill className="mr-3 text-blue-600" />
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
+            <Pill className="mr-3 text-blue-600 dark:text-blue-400" />
             Axels Pills
           </h1>
-          <LanguageSwitcher />
-          <button
-            onClick={async () => {
-              try {
-                const { signOut } = await import('firebase/auth');
-                const { auth } = await import('../firebase');
-                await signOut(auth);
-                navigate('/', { replace: true });
-              } catch (error) {
-                console.error('Logout error:', error);
-              }
-            }}
-            className="px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-          >
-            {t('home.logout')}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeSwitcher />
+            <button
+              onClick={async () => {
+                try {
+                  const { signOut } = await import('firebase/auth');
+                  const { auth } = await import('../firebase');
+                  await signOut(auth);
+                  navigate('/', { replace: true });
+                } catch (error) {
+                  console.error('Logout error:', error);
+                }
+              }}
+              className="px-4 py-2 rounded-md font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              {t('home.logout')}
+            </button>
+          </div>
         </div>
       </div>
       <nav className="flex flex-wrap gap-2 ">
@@ -531,7 +535,7 @@ const MedicationSystem = () => {
           className={`px-4 py-2 rounded-md font-medium transition-colors ${
             currentPage === 'patients'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
           <User className="w-4 h-4 inline-block mr-2" />
@@ -542,7 +546,7 @@ const MedicationSystem = () => {
           className={`px-4 py-2 rounded-md font-medium transition-colors ${
             currentPage === 'medications'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
           <Package className="w-4 h-4 inline-block mr-2" />
@@ -553,7 +557,7 @@ const MedicationSystem = () => {
           className={`px-4 py-2 rounded-md font-medium transition-colors ${
             currentPage === 'history'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
           <History className="w-4 h-4 inline-block mr-2" />
@@ -564,10 +568,10 @@ const MedicationSystem = () => {
   );
 
   const PatientsPage = () => (
-    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
       {/* Добавление нового пациента */}
-      <div className="bg-blue-50 p-4 rounded-lg mb-6">
-        <h2 className="text-xl font-semibold mb-3 text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-6">
+        <h2 className="text-xl font-semibold mb-3 text-blue-800 dark:text-white">
           {t('home.patients.addPatient')}
         </h2>
         <div className="flex flex-wrap gap-3">
@@ -577,7 +581,7 @@ const MedicationSystem = () => {
             placeholder={t('home.patients.patientName')}
             value={newPatientName}
             onChange={e => setNewPatientName(e.target.value)}
-            className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 p-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <button
             onClick={addPatient}
@@ -594,23 +598,23 @@ const MedicationSystem = () => {
         {patients.map(patient => (
           <div
             key={patient.id}
-            className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+            className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800"
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center">
                 <User className="w-5 h-5 mr-2 text-green-600" />
                 {patient.name}
               </h3>
               <button
                 onClick={() => removePatient(patient.id)}
-                className="text-red-600 hover:text-red-800 p-1"
+                className="text-red-600 dark:text-red-400 hover:text-red-800 p-1"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
 
             {/* Добавление препарата */}
-            <div className="bg-white p-3 rounded-md mb-4">
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-md mb-4">
               <div className="flex gap-3 flex-wrap">
                 <input
                   type="text"
@@ -620,7 +624,7 @@ const MedicationSystem = () => {
                     setNewMedication(e.target.value);
                     setSelectedPatient(patient.id);
                   }}
-                  className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="flex-1 p-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
                 <input
                   type="number"
@@ -632,7 +636,7 @@ const MedicationSystem = () => {
                     setNewMedicationPills(e.target.value);
                     setSelectedPatient(patient.id);
                   }}
-                  className="w-32 p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-32 p-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
                 <button
                   onClick={() => addMedication(patient.id)}
@@ -653,28 +657,28 @@ const MedicationSystem = () => {
                 return (
                   <div
                     key={medication.id}
-                    className={`bg-white p-4 rounded-md border-l-4 border-blue-500 ${
+                    className={`dark:bg-gray-700 bg-white p-4 rounded-md border-l-4 border-blue-500 ${
                       warningLevel !== 'normal'
                         ? 'ring-2 ring-opacity-50 ' +
                           getWarningColor(warningLevel)
                         : ''
                     }`}
                   >
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-3 ">
                       <div className="flex-1">
-                        <h4 className="font-medium text-lg text-gray-800 flex items-center">
+                        <h4 className="font-medium text-lg text-gray-800 dark:text-white flex items-center">
                           <Pill className="w-4 h-4 mr-2 text-blue-600" />
                           {medication.name}
                         </h4>
-                        <div className="flex flex-wrap items-center mt-1 gap-2">
-                          <span className="text-sm text-gray-600">
+                        <div className=" flex flex-wrap items-center mt-1 gap-2">
+                          <span className="text-sm text-gray-600 dark:text-white">
                             {t('home.patients.remaining')}:{' '}
                             <strong>
                               {medication.pillsRemaining}{' '}
                               {t('home.patients.tabs')}
                             </strong>
                           </span>
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-gray-600 dark:text-white">
                             {t('home.patients.enoughFor')}:{' '}
                             <strong>
                               {daysRemaining === Infinity ? '∞' : daysRemaining}{' '}
@@ -706,8 +710,8 @@ const MedicationSystem = () => {
                     </div>
 
                     <div className="flex items-center mb-2">
-                      <Clock className="w-4 h-4 mr-2 text-gray-600" />
-                      <span className="text-sm text-gray-600 font-medium">
+                      <Clock className="w-4 h-4 mr-2 text-gray-600  dark:text-white " />
+                      <span className="text-sm text-gray-600 font-medium dark:text-white">
                         {t('home.patients.schedule')}:
                       </span>
                     </div>
@@ -743,8 +747,8 @@ const MedicationSystem = () => {
                               <div
                                 className={`flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                                   medication[time]
-                                    ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                                    : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
+                                    ? 'bg-green-100 text-green-800 border-2 border-green-300 dark:bg-blue-600 dark:text-white dark:border-blue-500'
+                                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
                               >
                                 {medication[time] && (
@@ -758,7 +762,7 @@ const MedicationSystem = () => {
                       )}
                     </div>
 
-                    <div className="mt-2 sm:ml-6 text-sm text-gray-600">
+                    <div className="mt-2 sm:ml-6 text-sm text-gray-600 dark:text-white">
                       <strong>{t('home.patients.take')}:</strong>{' '}
                       {getScheduleText(medication)}
                       <span className="ml-4">
@@ -773,7 +777,7 @@ const MedicationSystem = () => {
 
               {(!medsByPatient[patient.id] ||
                 medsByPatient[patient.id].length === 0) && (
-                <div className="text-gray-500 text-center py-4 italic">
+                <div className="text-gray-500 dark:text-gray-400 text-center py-4 italic">
                   {t('home.patients.noPrescribed')}
                 </div>
               )}
@@ -833,8 +837,8 @@ const MedicationSystem = () => {
 
         {/* Сповіщення */}
         {(criticalMedications.length > 0 || warningMedications.length > 0) && (
-          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
               {t('home.medications.notifications')}
             </h2>
@@ -890,8 +894,8 @@ const MedicationSystem = () => {
         )}
 
         {/* Общий список препаратов */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center">
             <Package className="w-6 h-6 mr-2 text-green-600" />
             {t('home.medications.allMedications')}
           </h2>
@@ -899,7 +903,7 @@ const MedicationSystem = () => {
           <div className="overflow-x-auto">
             <table className="w-full table-auto">
               <thead>
-                <tr className="bg-gray-50 border-b">
+                <tr className="bg-gray-50 dark:bg-gray-700 border-b">
                   <th className="text-left p-3 font-semibold">
                     {t('home.medications.medicationName')}
                   </th>
@@ -1025,13 +1029,13 @@ const MedicationSystem = () => {
   const HistoryPage = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-white flex items-center">
               <History className="w-6 h-6 mr-2 text-green-600" />
               {t('home.history.title')}
             </h2>
-            <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
               {t('home.history.recordsFound')} {purchases.length}
             </div>
           </div>
@@ -1068,7 +1072,7 @@ const MedicationSystem = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm text-gray-600 mb-1">
+                          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                             {t('home.history.notes')}
                           </label>
                           <input
@@ -1117,7 +1121,7 @@ const MedicationSystem = () => {
                           <button
                             disabled={savingEdit}
                             onClick={() => setEditing(null)}
-                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded"
+                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800 dark:text-white rounded"
                           >
                             {t('home.history.cancel')}
                           </button>
@@ -1134,7 +1138,7 @@ const MedicationSystem = () => {
                           </span>
                         </div>
                         {p.notes && (
-                          <div className="text-sm text-gray-700 mt-1">
+                          <div className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                             {t('home.history.notes')} {p.notes}
                           </div>
                         )}
@@ -1193,7 +1197,7 @@ const MedicationSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Header />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
         {currentPage === 'patients' && PatientsPage()}
@@ -1202,7 +1206,7 @@ const MedicationSystem = () => {
       </div>
 
       {toast.open && (
-        <div className="fixed bottom-4 right-4 z-50 bg-green-600 text-white text-sm px-4 py-2 rounded shadow-lg">
+        <div className="fixed bottom-4 right-4 z-50 bg-green-600 dark:bg-green-700 text-white text-sm px-4 py-2 rounded shadow-lg">
           {toast.message}
         </div>
       )}
