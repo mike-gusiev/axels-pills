@@ -1,4 +1,5 @@
 {
+  "_locale": "uk-UA",
   "months": {
     "january": "січня",
     "february": "лютого",
@@ -19,6 +20,120 @@
     "theme": "Тема",
     "lightTheme": "Світла",
     "darkTheme": "Темна"
+  },
+  "auth": {
+    "login": {
+      "title": "Axels Pills Tracker",
+      "subtitle": "Увійдіть до свого облікового запису",
+      "email": "Електронна пошта",
+      "password": "Пароль",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Введіть пароль",
+      "loginButton": "Увійти",
+      "loading": "Вхід...",
+      "noAccount": "Немає акаунта?",
+      "register": "Зареєструватися",
+      "errors": {
+        "invalidEmail": "Невалідний email.",
+        "userDisabled": "Акаунт заблоковано.",
+        "userNotFound": "Користувача не знайдено.",
+        "wrongPassword": "Невірний пароль.",
+        "default": "Сталася помилка. Спробуйте ще раз."
+      }
+    },
+    "register": {
+      "title": "Реєстрація",
+      "subtitle": "Створіть обліковий запис",
+      "username": "Ім'я користувача",
+      "usernamePlaceholder": "Напр., Оксана",
+      "email": "Електронна пошта",
+      "emailPlaceholder": "you@example.com",
+      "password": "Пароль",
+      "passwordPlaceholder": "Мін. 6 символів",
+      "confirmPassword": "Підтвердіть пароль",
+      "confirmPasswordPlaceholder": "Повторіть пароль",
+      "registerButton": "Зареєструватися",
+      "loading": "Реєстрація…",
+      "haveAccount": "Вже маєте акаунт?",
+      "login": "Увійти",
+      "errors": {
+        "emailInUse": "Такий email вже зареєстровано",
+        "invalidEmail": "Невалідний email",
+        "weakPassword": "Занадто простий пароль (мінімум 6 символів)",
+        "usernameRequired": "Вкажіть ім'я користувача",
+        "passwordLength": "Пароль має містити мінімум 6 символів",
+        "passwordMismatch": "Паролі не співпадають",
+        "default": "Сталася помилка. Спробуйте ще раз"
+      }
+    }
+  },
+  "home": {
+    "logout": "Вийти",
+    "settings": "Налаштування",
+    "tabs": {
+      "patients": "Пацієнти",
+      "medications": "Препарати",
+      "history": "Історія"
+    },
+    "patients": {
+      "addPatient": "Додати пацієнта",
+      "patientName": "ПІБ пацієнта",
+      "add": "Додати",
+      "noPatients": "Пацієнти не додані",
+      "medicationName": "Назва препарата",
+      "pillsCount": "К-ть таблеток",
+      "noPrescribed": "Препарати не призначені",
+      "remaining": "Залишилося",
+      "enoughFor": "Вистачить на",
+      "days": "дн.",
+      "tabs": "таб.",
+      "schedule": "Графік прийому",
+      "morning": "Вранці",
+      "afternoon": "Вдень",
+      "evening": "Ввечері",
+      "take": "Приймати",
+      "perMonth": "В місяць",
+      "notAssigned": "не назначено",
+      "urgentRefill": "Терміново поповнити!",
+      "endingSoon": "Скоро закінчиться",
+      "unbindFromPatient": "Відв'язати від пацієнта"
+    },
+    "medications": {
+      "date": "Дата",
+      "notifications": "Сповіщення",
+      "criticalLevel": "Критичний рівень запасів:",
+      "endingSoon": "Скоро закінчиться:",
+      "allMedications": "Всі препарати",
+      "medicationName": "Назва препарата",
+      "totalRemaining": "Загальний залишок",
+      "dailyConsumption": "Витрата на день",
+      "daysRemaining": "Вистачить на днів",
+      "patients": "Приймають пацієнти",
+      "status": "Статус",
+      "actions": "Дії",
+      "critical": "Критичний",
+      "warning": "Попередження",
+      "normal": "Норма",
+      "purchased": "Купили (таб.)",
+      "noMedications": "Препарати не додані"
+    },
+    "history": {
+      "title": "Історія операцій",
+      "recordsFound": "Знайдено записів:",
+      "quantity": "Кількість:",
+      "notes": "Примітки:",
+      "addNote": "Додайте примітку…",
+      "save": "Зберегти",
+      "cancel": "Скасувати",
+      "edit": "Редагувати",
+      "delete": "Видалити",
+      "deleteConfirm": "Видалити операцію? Загальну кількість буде зменшено на вказану кількість.",
+      "negativeQuantity": "Кількість не може бути від'ємною",
+      "saveError": "Помилка збереження",
+      "deleteError": "Помилка видалення",
+      "addedToast": "Додано +{{count}} таб. до «{{name}}»",
+      "addFailed": "Не вдалося додати кількість"
+    }
   },
   "hero": {
     "title": "Ваші ліки під контролем",

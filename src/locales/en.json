@@ -1,4 +1,5 @@
 {
+  "_locale": "en-US",
   "months": {
     "january": "January",
     "february": "February",
@@ -19,6 +20,120 @@
     "theme": "Theme",
     "lightTheme": "Light",
     "darkTheme": "Dark"
+  },
+  "auth": {
+    "login": {
+      "title": "Axels Pills Tracker",
+      "subtitle": "Log in to your account",
+      "email": "Email",
+      "password": "Password",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Enter password",
+      "loginButton": "Log In",
+      "loading": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "register": "Sign Up",
+      "errors": {
+        "invalidEmail": "Invalid email.",
+        "userDisabled": "Account disabled.",
+        "userNotFound": "User not found.",
+        "wrongPassword": "Wrong password.",
+        "default": "An error occurred. Please try again."
+      }
+    },
+    "register": {
+      "title": "Registration",
+      "subtitle": "Create an account",
+      "username": "Username",
+      "usernamePlaceholder": "e.g., Oksana",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 6 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat password",
+      "registerButton": "Sign Up",
+      "loading": "Registering...",
+      "haveAccount": "Already have an account?",
+      "login": "Log In",
+      "errors": {
+        "emailInUse": "This email is already registered",
+        "invalidEmail": "Invalid email",
+        "weakPassword": "Password too weak (minimum 6 characters)",
+        "usernameRequired": "Please enter username",
+        "passwordLength": "Password must contain at least 6 characters",
+        "passwordMismatch": "Passwords do not match",
+        "default": "An error occurred. Please try again"
+      }
+    }
+  },
+  "home": {
+    "logout": "Log Out",
+    "settings": "Settings",
+    "tabs": {
+      "patients": "Patients",
+      "medications": "Medications",
+      "history": "History"
+    },
+    "patients": {
+      "addPatient": "Add Patient",
+      "patientName": "Patient Name",
+      "add": "Add",
+      "noPatients": "No patients added",
+      "medicationName": "Medication Name",
+      "pillsCount": "Pills Count",
+      "noPrescribed": "No medications prescribed",
+      "remaining": "Remaining",
+      "enoughFor": "Enough for",
+      "days": "days",
+      "tabs": "tabs",
+      "schedule": "Schedule",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "take": "Take",
+      "perMonth": "Per month",
+      "notAssigned": "not assigned",
+      "urgentRefill": "Urgent refill!",
+      "endingSoon": "Ending soon",
+      "unbindFromPatient": "Unbind from patient"
+    },
+    "medications": {
+      "date": "Date",
+      "notifications": "Notifications",
+      "criticalLevel": "Critical stock level:",
+      "endingSoon": "Ending soon:",
+      "allMedications": "All Medications",
+      "medicationName": "Medication Name",
+      "totalRemaining": "Total Remaining",
+      "dailyConsumption": "Daily Consumption",
+      "daysRemaining": "Days Remaining",
+      "patients": "Taken by patients",
+      "status": "Status",
+      "actions": "Actions",
+      "critical": "Critical",
+      "warning": "Warning",
+      "normal": "Normal",
+      "purchased": "Purchased (tabs)",
+      "noMedications": "No medications added"
+    },
+    "history": {
+      "title": "Operation History",
+      "recordsFound": "Records found:",
+      "quantity": "Quantity:",
+      "notes": "Notes:",
+      "addNote": "Add note…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete purchase? Stock will be reduced by this amount.",
+      "negativeQuantity": "Quantity cannot be negative",
+      "saveError": "Save error",
+      "deleteError": "Delete error",
+      "addedToast": "Added +{{count}} tabs to «{{name}}»",
+      "addFailed": "Failed to add quantity"
+    }
   },
   "hero": {
     "title": "Your Medications Under Control",
