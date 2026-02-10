@@ -20,6 +20,52 @@
     "lightTheme": "Light",
     "darkTheme": "Dark"
   },
+  "auth": {
+    "login": {
+      "title": "Axels Pills Tracker",
+      "subtitle": "Log in to your account",
+      "email": "Email",
+      "password": "Password",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Enter password",
+      "loginButton": "Log In",
+      "loading": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "register": "Sign Up",
+      "errors": {
+        "invalidEmail": "Invalid email.",
+        "userDisabled": "Account disabled.",
+        "userNotFound": "User not found.",
+        "wrongPassword": "Wrong password.",
+        "default": "An error occurred. Please try again."
+      }
+    },
+    "register": {
+      "title": "Registration",
+      "subtitle": "Create an account",
+      "username": "Username",
+      "usernamePlaceholder": "e.g., Oksana",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 6 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat password",
+      "registerButton": "Sign Up",
+      "loading": "Registering...",
+      "haveAccount": "Already have an account?",
+      "login": "Log In",
+      "errors": {
+        "emailInUse": "This email is already registered",
+        "invalidEmail": "Invalid email",
+        "weakPassword": "Password too weak (minimum 6 characters)",
+        "usernameRequired": "Please enter username",
+        "passwordLength": "Password must contain at least 6 characters",
+        "passwordMismatch": "Passwords do not match",
+        "default": "An error occurred. Please try again"
+      }
+    }
+  },
   "hero": {
     "title": "Your Medications Under Control",
     "subtitle": "Never forget to take your medications on time. Axels Pills - your personal health assistant.",

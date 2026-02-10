@@ -1,25 +1,14 @@
 import { useState } from 'react';
 import { Mail, Lock, Pill, UserPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
-const mapFirebaseError = (code?: string) => {
-  switch (code) {
-    case 'auth/email-already-in-use':
-      return 'Такий email вже зареєстровано';
-    case 'auth/invalid-email':
-      return 'Невалідний email';
-    case 'auth/weak-password':
-      return 'Занадто простий пароль (мінімум 6 символів)';
-    default:
-      return 'Сталася помилка. Спробуйте ще раз';
-  }
-};
-
 const RegisterPage: React.FC = () => {
   const nav = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -27,14 +16,29 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const mapFirebaseError = (code?: string) => {
+    switch (code) {
+      case 'auth/email-already-in-use':
+        return t('auth.register.errors.emailInUse');
+      case 'auth/invalid-email':
+        return t('auth.register.errors.invalidEmail');
+      case 'auth/weak-password':
+        return t('auth.register.errors.weakPassword');
+      default:
+        return t('auth.register.errors.default');
+    }
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
 
-    if (!username.trim()) return setErr('Вкажіть ім’я користувача');
+    if (!username.trim())
+      return setErr(t('auth.register.errors.usernameRequired'));
     if (password.length < 6)
-      return setErr('Пароль має містити мінімум 6 символів');
-    if (password !== confirm) return setErr('Паролі не співпадають');
+      return setErr(t('auth.register.errors.passwordLength'));
+    if (password !== confirm)
+      return setErr(t('auth.register.errors.passwordMismatch'));
 
     setLoading(true);
     try {
@@ -47,8 +51,9 @@ const RegisterPage: React.FC = () => {
         createdAt: serverTimestamp(),
       });
       nav('/home');
-    } catch (e: any) {
-      setErr(mapFirebaseError(e?.code));
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+      setErr(mapFirebaseError(firebaseError?.code));
     } finally {
       setLoading(false);
     }
@@ -62,14 +67,16 @@ const RegisterPage: React.FC = () => {
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Pill className="w-8 h-8 text-blue-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">Реєстрація</h1>
-            <p className="text-gray-600">Створіть обліковий запис</p>
+            <h1 className="text-3xl font-bold text-gray-800">
+              {t('auth.register.title')}
+            </h1>
+            <p className="text-gray-600">{t('auth.register.subtitle')}</p>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-5">
             <label className="block">
               <span className="block text-sm font-medium text-gray-700 mb-2">
-                Ім’я користувача
+                {t('auth.register.username')}
               </span>
               <input
                 type="text"
@@ -77,13 +84,13 @@ const RegisterPage: React.FC = () => {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 className="block w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Напр., Оксана"
+                placeholder={t('auth.register.usernamePlaceholder')}
               />
             </label>
 
             <label className="block">
               <span className="block text-sm font-medium text-gray-700 mb-2">
-                Електронна пошта
+                {t('auth.register.email')}
               </span>
               <div className="relative">
                 <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
@@ -93,14 +100,14 @@ const RegisterPage: React.FC = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="you@example.com"
+                  placeholder={t('auth.register.emailPlaceholder')}
                 />
               </div>
             </label>
 
             <label className="block">
               <span className="block text-sm font-medium text-gray-700 mb-2">
-                Пароль
+                {t('auth.register.password')}
               </span>
               <div className="relative">
                 <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
@@ -110,14 +117,14 @@ const RegisterPage: React.FC = () => {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="мін. 6 символів"
+                  placeholder={t('auth.register.passwordPlaceholder')}
                 />
               </div>
             </label>
 
             <label className="block">
               <span className="block text-sm font-medium text-gray-700 mb-2">
-                Підтвердіть пароль
+                {t('auth.register.confirmPassword')}
               </span>
               <input
                 type="password"
@@ -125,7 +132,7 @@ const RegisterPage: React.FC = () => {
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
                 className="block w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="повторіть пароль"
+                placeholder={t('auth.register.confirmPasswordPlaceholder')}
               />
             </label>
 
@@ -137,19 +144,19 @@ const RegisterPage: React.FC = () => {
               className="w-full flex justify-center items-center py-3 rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? (
-                'Реєстрація…'
+                t('auth.register.loading')
               ) : (
                 <>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Зареєструватися
+                  {t('auth.register.registerButton')}
                 </>
               )}
             </button>
 
             <div className="text-center text-sm">
-              Вже маєте акаунт?{' '}
+              {t('auth.register.haveAccount')}{' '}
               <Link to="/login" className="text-blue-600 hover:underline">
-                Увійти
+                {t('auth.register.login')}
               </Link>
             </div>
           </form>

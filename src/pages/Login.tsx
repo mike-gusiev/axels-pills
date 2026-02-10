@@ -1,32 +1,34 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, LogIn, Pill } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-const mapFirebaseError = (code?: string) => {
-  switch (code) {
-    case 'auth/invalid-email':
-      return 'Невалідний email.';
-    case 'auth/user-disabled':
-      return 'Акаунт заблоковано.';
-    case 'auth/user-not-found':
-      return 'Користувача не знайдено.';
-    case 'auth/wrong-password':
-      return 'Невірний пароль.';
-    default:
-      return 'Сталася помилка. Спробуйте ще раз.';
-  }
-};
-
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const mapFirebaseError = (code?: string) => {
+    switch (code) {
+      case 'auth/invalid-email':
+        return t('auth.login.errors.invalidEmail');
+      case 'auth/user-disabled':
+        return t('auth.login.errors.userDisabled');
+      case 'auth/user-not-found':
+        return t('auth.login.errors.userNotFound');
+      case 'auth/wrong-password':
+        return t('auth.login.errors.wrongPassword');
+      default:
+        return t('auth.login.errors.default');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,8 +37,9 @@ const LoginPage = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/home', { replace: true });
-    } catch (e: any) {
-      setErr(mapFirebaseError(e?.code));
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+      setErr(mapFirebaseError(firebaseError?.code));
     } finally {
       setIsLoading(false);
     }
@@ -51,15 +54,15 @@ const LoginPage = () => {
               <Pill className="w-8 h-8 text-blue-600" />
             </div>
             <h1 className="text-3xl font-bold text-gray-800">
-              Axels Pills Tracker
+              {t('auth.login.title')}
             </h1>
-            <p className="text-gray-600">Увійдіть до свого облікового запису</p>
+            <p className="text-gray-600">{t('auth.login.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <label className="block">
               <span className="block text-sm font-medium text-gray-700 mb-2">
-                Електронна пошта
+                {t('auth.login.email')}
               </span>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -71,14 +74,14 @@ const LoginPage = () => {
                   onChange={e => setEmail(e.target.value)}
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="you@example.com"
+                  placeholder={t('auth.login.emailPlaceholder')}
                 />
               </div>
             </label>
 
             <label className="block">
               <span className="block text-sm font-medium text-gray-700 mb-2">
-                Пароль
+                {t('auth.login.password')}
               </span>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -90,7 +93,7 @@ const LoginPage = () => {
                   onChange={e => setPassword(e.target.value)}
                   required
                   className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="введіть пароль"
+                  placeholder={t('auth.login.passwordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -116,20 +119,20 @@ const LoginPage = () => {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Вхід...
+                  {t('auth.login.loading')}
                 </div>
               ) : (
                 <div className="flex items-center">
                   <LogIn className="w-4 h-4 mr-2" />
-                  Увійти
+                  {t('auth.login.loginButton')}
                 </div>
               )}
             </button>
 
             <div className="text-center text-sm">
-              Немає акаунта?{' '}
+              {t('auth.login.noAccount')}{' '}
               <Link to="/register" className="text-blue-600 hover:underline">
-                Зареєструватися
+                {t('auth.login.register')}
               </Link>
             </div>
           </form>

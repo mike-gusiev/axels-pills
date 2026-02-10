@@ -26,6 +26,7 @@ import {
   deletePurchase,
   type Purchase,
 } from '../services/userHistory';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 import { db } from '../firebase';
 import {
@@ -499,6 +500,7 @@ const MedicationSystem = () => {
             <Pill className="mr-3 text-blue-600" />
             Axels Pills
           </h1>
+          <LanguageSwitcher />
           <button
             onClick={async () => {
               try {
