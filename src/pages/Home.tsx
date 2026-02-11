@@ -12,11 +12,6 @@ import {
   AlertTriangle,
   Package,
   History,
-  ShoppingCart,
-  Edit3,
-  Filter,
-  TrendingUp,
-  TrendingDown,
   Menu,
   X,
 } from 'lucide-react';
@@ -52,7 +47,6 @@ import { PatientMedication } from '../services/userMeds';
 type Page = 'patients' | 'medications' | 'history';
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 type WarningLevel = 'critical' | 'warning' | 'normal';
-type HistoryAction = 'purchase' | 'consumption' | 'adjustment' | 'prescription';
 
 interface Medication {
   id: string;
@@ -104,13 +98,12 @@ const MedicationSystem = () => {
   const [newMedication, setNewMedication] = useState<string>('');
   const [newMedicationPills, setNewMedicationPills] = useState<string>('');
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
-  const [patientsFS, setPatientsFS] = useState<Patient[]>([]);
+  const [patientsFS] = useState<Patient[]>([]);
 
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [editing, setEditing] = useState<Purchase | null>(null);
-  const [loadingPurchases, setLoadingPurchases] = useState(false);
+  const [, setLoadingPurchases] = useState(false);
   const [editBuff, setEditBuff] = useState<{ quantity: number; notes: string }>(
     {
       quantity: 0,
@@ -146,11 +139,6 @@ const MedicationSystem = () => {
       snap => {
         unsubs.forEach(u => u());
         unsubs.length = 0;
-
-        const nextAssignMap: Record<
-          string,
-          Record<string, PatientMedication>
-        > = {};
 
         snap.docs.forEach(pDoc => {
           const pid = pDoc.id;
@@ -188,6 +176,7 @@ const MedicationSystem = () => {
           return {
             id: d.id,
             ...data,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             patientIds: Array.isArray((data as any).patientIds)
               ? data.patientIds
               : [],
@@ -198,20 +187,6 @@ const MedicationSystem = () => {
     );
     return () => unsub();
   }, [user?.uid]);
-
-  useEffect(() => {
-    if (!user) return;
-    const unsub = onSnapshot(
-      collection(db, `users/${user.uid}/patients`),
-      snapshot => {
-        const patients: Patient[] = snapshot.docs.map(d => ({
-          id: d.id,
-          ...(d.data() as Omit<Patient, 'id'>),
-        }));
-        setPatientsFS(patients);
-      }
-    );
-  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -264,36 +239,8 @@ const MedicationSystem = () => {
 
   const [selectedDate, setSelectedDate] = useState<string>(todayISO());
 
-  const startOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diffInDays = (a: Date, b: Date) => {
-    const A = startOfDay(a).getTime();
-    const B = startOfDay(b).getTime();
-    return Math.round((A - B) / (1000 * 60 * 60 * 24));
-  };
   const dailyFor = (m: PatientMedication) =>
     (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
-
-  const pillsAtDate = (
-    m: PatientMedication,
-    asOfISO: string
-  ): number | typeof Infinity => {
-    const daily = dailyFor(m);
-    if (!daily) return Infinity;
-    const today = new Date();
-    const asOf = new Date(asOfISO);
-    const forward = Math.max(0, diffInDays(asOf, today));
-    const projected = m.pillsRemaining - daily * forward;
-    return Math.max(0, projected);
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 86400000); // 24h
-
-    return () => clearInterval(timer);
-  }, []);
 
   const addPatient = async (): Promise<void> => {
     if (!user || !newPatientName.trim()) return;
