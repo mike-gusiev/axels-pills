@@ -1031,20 +1031,39 @@ const MedicationSystem = () => {
                         </span>
                       </td>
                       <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder={t('home.medications.purchased')}
-                            value={buyQty[medication.id as string] ?? ''}
-                            onChange={e =>
-                              setBuyQty(prev => ({
-                                ...prev,
-                                [medication.id as string]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
+                        {medication.patients.length === 0 ? (
+                          <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                            {t('home.medications.medicationDeleted')}
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder={t('home.medications.purchased')}
+                              value={buyQty[medication.id as string] ?? ''}
+                              onChange={e =>
+                                setBuyQty(prev => ({
+                                  ...prev,
+                                  [medication.id as string]: e.target.value,
+                                }))
+                              }
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  const id = medication.id as string;
+                                  const val = buyQty[id];
+                                  if (!val) return;
+                                  handleAddPurchase(
+                                    { id, name: medication.name },
+                                    val
+                                  );
+                                  setBuyQty(prev => ({ ...prev, [id]: '' }));
+                                }
+                              }}
+                              className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => {
                                 const id = medication.id as string;
                                 const val = buyQty[id];
                                 if (!val) return;
@@ -1053,27 +1072,14 @@ const MedicationSystem = () => {
                                   val
                                 );
                                 setBuyQty(prev => ({ ...prev, [id]: '' }));
-                              }
-                            }}
-                            className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
-                          />
-                          <button
-                            onClick={() => {
-                              const id = medication.id as string;
-                              const val = buyQty[id];
-                              if (!val) return;
-                              handleAddPurchase(
-                                { id, name: medication.name },
-                                val
-                              );
-                              setBuyQty(prev => ({ ...prev, [id]: '' }));
-                            }}
-                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                            title="Додати"
-                          >
-                            +
-                          </button>
-                        </div>
+                              }}
+                              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                              title="Додати"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
@@ -1108,156 +1114,168 @@ const MedicationSystem = () => {
           </div>
 
           <div className="space-y-4">
-            {purchases.map(p => (
-              <div key={p.id} className="border rounded-lg p-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start">
-                  <div className="flex-1">
-                    <div className="font-semibold text-lg dark:text-white">
-                      {p.medicationName}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-white">
-                      {new Date(p.timestamp).toLocaleString('uk-UA')}
-                    </div>
+            {purchases.map(p => {
+              const medication = medsFS.find(m => m.id === p.medicationId);
+              const isDeleted =
+                !medication || (medication.patientIds?.length ?? 0) === 0;
 
-                    {editing?.id === p.id ? (
-                      <div className="mt-3 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <label className="text-sm text-gray-600 dark:text-white">
-                            {t('home.history.quantity')}
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={editBuff.quantity}
-                            onChange={e =>
-                              setEditBuff(prev => ({
-                                ...prev,
-                                quantity:
-                                  parseInt(e.target.value || '0', 10) || 0,
-                              }))
-                            }
-                            className="w-28 p-1 text-sm border rounded"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
-                            {t('home.history.notes')}
-                          </label>
-                          <input
-                            type="text"
-                            value={editBuff.notes}
-                            onChange={e =>
-                              setEditBuff(prev => ({
-                                ...prev,
-                                notes: e.target.value,
-                              }))
-                            }
-                            className="w-full p-2 text-sm border rounded"
-                            placeholder={t('home.history.addNote')}
-                          />
-                        </div>
-
-                        <div className="flex gap-2">
-                          <button
-                            disabled={savingEdit}
-                            onClick={async () => {
-                              if (!user) return;
-                              if (editBuff.quantity < 0) {
-                                alert(t('home.history.quantityNegative'));
-                                return;
-                              }
-                              try {
-                                setSavingEdit(true);
-                                await updatePurchase(user.uid, p, {
-                                  quantity: editBuff.quantity,
-                                  notes: editBuff.notes,
-                                });
-                                setEditing(null);
-                              } catch (err: unknown) {
-                                const error = err as { message?: string };
-                                alert(
-                                  error?.message ?? t('home.history.saveError')
-                                );
-                              } finally {
-                                setSavingEdit(false);
-                              }
-                            }}
-                            className="px-3 py-1 text-sm bg-green-600 text-white rounded disabled:opacity-60"
-                          >
-                            {t('home.history.save')}
-                          </button>
-                          <button
-                            disabled={savingEdit}
-                            onClick={() => setEditing(null)}
-                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800  rounded"
-                          >
-                            {t('home.history.cancel')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="mt-1">
-                          <span className="text-sm text-gray-600 dark:text-white">
-                            {t('home.history.quantity')}
+              return (
+                <div key={p.id} className="border rounded-lg p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start">
+                    <div className="flex-1">
+                      <div className="font-semibold text-lg dark:text-white flex items-center gap-2">
+                        {p.medicationName}
+                        {isDeleted && (
+                          <span className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded">
+                            {t('home.history.deleted')}
                           </span>
-                          <span className="font-semibold text-green-700">
-                            +{p.quantity}
-                          </span>
-                        </div>
-                        {p.notes && (
-                          <div className="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                            {t('home.history.notes')} {p.notes}
-                          </div>
                         )}
-                      </>
-                    )}
-                  </div>
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-white">
+                        {new Date(p.timestamp).toLocaleString('uk-UA')}
+                      </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:ml-4">
-                    {editing?.id === p.id ? null : (
-                      <button
-                        onClick={() => {
-                          setEditing(p);
-                          setEditBuff({
-                            quantity: p.quantity,
-                            notes: p.notes ?? '',
-                          });
-                        }}
-                        className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
-                      >
-                        {t('home.history.edit')}
-                      </button>
-                    )}
-                    <button
-                      onClick={async () => {
-                        if (!user) return;
-                        if (
-                          confirm(
-                            t('home.history.deleteConfirm', {
+                      {editing?.id === p.id ? (
+                        <div className="mt-3 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <label className="text-sm text-gray-600 dark:text-white">
+                              {t('home.history.quantity')}
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={editBuff.quantity}
+                              onChange={e =>
+                                setEditBuff(prev => ({
+                                  ...prev,
+                                  quantity:
+                                    parseInt(e.target.value || '0', 10) || 0,
+                                }))
+                              }
+                              className="w-28 p-1 text-sm border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                              {t('home.history.notes')}
+                            </label>
+                            <input
+                              type="text"
+                              value={editBuff.notes}
+                              onChange={e =>
+                                setEditBuff(prev => ({
+                                  ...prev,
+                                  notes: e.target.value,
+                                }))
+                              }
+                              className="w-full p-2 text-sm border rounded"
+                              placeholder={t('home.history.addNote')}
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button
+                              disabled={savingEdit}
+                              onClick={async () => {
+                                if (!user) return;
+                                if (editBuff.quantity < 0) {
+                                  alert(t('home.history.quantityNegative'));
+                                  return;
+                                }
+                                try {
+                                  setSavingEdit(true);
+                                  await updatePurchase(user.uid, p, {
+                                    quantity: editBuff.quantity,
+                                    notes: editBuff.notes,
+                                  });
+                                  setEditing(null);
+                                } catch (err: unknown) {
+                                  const error = err as { message?: string };
+                                  alert(
+                                    error?.message ??
+                                      t('home.history.saveError')
+                                  );
+                                } finally {
+                                  setSavingEdit(false);
+                                }
+                              }}
+                              className="px-3 py-1 text-sm bg-green-600 text-white rounded disabled:opacity-60"
+                            >
+                              {t('home.history.save')}
+                            </button>
+                            <button
+                              disabled={savingEdit}
+                              onClick={() => setEditing(null)}
+                              className="px-3 py-1 text-sm bg-gray-100 text-gray-800  rounded"
+                            >
+                              {t('home.history.cancel')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="mt-1">
+                            <span className="text-sm text-gray-600 dark:text-white">
+                              {t('home.history.quantity')}
+                            </span>
+                            <span className="font-semibold text-green-700">
+                              +{p.quantity}
+                            </span>
+                          </div>
+                          {p.notes && (
+                            <div className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                              {t('home.history.notes')} {p.notes}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:ml-4">
+                      {editing?.id === p.id ? null : (
+                        <button
+                          onClick={() => {
+                            setEditing(p);
+                            setEditBuff({
                               quantity: p.quantity,
-                            })
-                          )
-                        ) {
-                          try {
-                            await deletePurchase(user.uid, p);
-                            if (editing?.id === p.id) setEditing(null);
-                          } catch (err: unknown) {
-                            const error = err as { message?: string };
-                            alert(
-                              error?.message ?? t('home.history.deleteError')
-                            );
+                              notes: p.notes ?? '',
+                            });
+                          }}
+                          className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
+                        >
+                          {t('home.history.edit')}
+                        </button>
+                      )}
+                      <button
+                        onClick={async () => {
+                          if (!user) return;
+                          if (
+                            confirm(
+                              t('home.history.deleteConfirm', {
+                                quantity: p.quantity,
+                              })
+                            )
+                          ) {
+                            try {
+                              await deletePurchase(user.uid, p);
+                              if (editing?.id === p.id) setEditing(null);
+                            } catch (err: unknown) {
+                              const error = err as { message?: string };
+                              alert(
+                                error?.message ?? t('home.history.deleteError')
+                              );
+                            }
                           }
-                        }
-                      }}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
-                    >
-                      {t('home.history.delete')}
-                    </button>
+                        }}
+                        className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
+                      >
+                        {t('home.history.delete')}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

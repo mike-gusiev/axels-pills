@@ -116,7 +116,8 @@
       "warning": "Warning",
       "normal": "Normal",
       "purchased": "Purchased (tabs)",
-      "noMedications": "No medications added"
+      "noMedications": "No medications added",
+      "medicationDeleted": "Medication deleted"
     },
     "history": {
       "title": "Operation History",
@@ -133,7 +134,8 @@
       "saveError": "Save error",
       "deleteError": "Delete error",
       "addedToast": "Added +{{count}} tabs to «{{name}}»",
-      "addFailed": "Failed to add quantity"
+      "addFailed": "Failed to add quantity",
+      "deleted": "Pills are deleted"
     }
   },
   "hero": {
