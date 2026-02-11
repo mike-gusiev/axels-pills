@@ -1,38 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  Plus,
-  Trash2,
-  User,
-  Pill,
-  Clock,
-  CheckCircle,
-  Calendar,
-  AlertTriangle,
-  Package,
-  History,
-  ShoppingCart,
-  Edit3,
-  Filter,
-  TrendingUp,
-  TrendingDown,
-  Menu,
-  X,
-} from 'lucide-react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import '../styles/datepicker-dark.css';
 import {
   subscribePurchases,
   addPurchase,
-  updatePurchase,
-  deletePurchase,
   type Purchase,
 } from '../services/userHistory';
-import LanguageSwitcher from '../components/LanguageSwitcher';
-import ThemeSwitcher from '../components/ThemeSwitcher';
-
+import Header from '../components/Header';
+import {
+  PatientsPage,
+  MedicationsPage,
+  HistoryPage,
+} from '../components/pages';
 import { db } from '../firebase';
 import {
   collection,
@@ -48,37 +26,16 @@ import {
 } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
 import { PatientMedication } from '../services/userMeds';
-
-type Page = 'patients' | 'medications' | 'history';
-type TimeOfDay = 'morning' | 'afternoon' | 'evening';
-type WarningLevel = 'critical' | 'warning' | 'normal';
-type HistoryAction = 'purchase' | 'consumption' | 'adjustment' | 'prescription';
-
-interface Medication {
-  id: string;
-  name: string;
-  pillsRemaining: number;
-  patientIds: string[];
-}
-
-interface Patient {
-  id: string;
-  name: string;
-  medications: PatientMedication[];
-}
-
-interface AggregatedMedication {
-  id?: string;
-  name: string;
-  totalPills: number;
-  patients: string[];
-  dailyConsumption: number;
-  daysRemaining: number;
-}
+import {
+  Medication,
+  Patient,
+  AggregatedMedication,
+  Page,
+  WarningLevel,
+} from '@/types';
 
 const MedicationSystem = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState<Page>('patients');
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -104,13 +61,12 @@ const MedicationSystem = () => {
   const [newMedication, setNewMedication] = useState<string>('');
   const [newMedicationPills, setNewMedicationPills] = useState<string>('');
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [medsFS, setMedsFS] = useState<Medication[]>([]);
-  const [patientsFS, setPatientsFS] = useState<Patient[]>([]);
+  const [patientsFS] = useState<Patient[]>([]);
 
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [editing, setEditing] = useState<Purchase | null>(null);
-  const [loadingPurchases, setLoadingPurchases] = useState(false);
+  const [, setLoadingPurchases] = useState(false);
   const [editBuff, setEditBuff] = useState<{ quantity: number; notes: string }>(
     {
       quantity: 0,
@@ -146,11 +102,6 @@ const MedicationSystem = () => {
       snap => {
         unsubs.forEach(u => u());
         unsubs.length = 0;
-
-        const nextAssignMap: Record<
-          string,
-          Record<string, PatientMedication>
-        > = {};
 
         snap.docs.forEach(pDoc => {
           const pid = pDoc.id;
@@ -188,6 +139,7 @@ const MedicationSystem = () => {
           return {
             id: d.id,
             ...data,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             patientIds: Array.isArray((data as any).patientIds)
               ? data.patientIds
               : [],
@@ -197,21 +149,8 @@ const MedicationSystem = () => {
       }
     );
     return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
-
-  useEffect(() => {
-    if (!user) return;
-    const unsub = onSnapshot(
-      collection(db, `users/${user.uid}/patients`),
-      snapshot => {
-        const patients: Patient[] = snapshot.docs.map(d => ({
-          id: d.id,
-          ...(d.data() as Omit<Patient, 'id'>),
-        }));
-        setPatientsFS(patients);
-      }
-    );
-  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -264,36 +203,8 @@ const MedicationSystem = () => {
 
   const [selectedDate, setSelectedDate] = useState<string>(todayISO());
 
-  const startOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diffInDays = (a: Date, b: Date) => {
-    const A = startOfDay(a).getTime();
-    const B = startOfDay(b).getTime();
-    return Math.round((A - B) / (1000 * 60 * 60 * 24));
-  };
   const dailyFor = (m: PatientMedication) =>
     (m.morning ? 1 : 0) + (m.afternoon ? 1 : 0) + (m.evening ? 1 : 0);
-
-  const pillsAtDate = (
-    m: PatientMedication,
-    asOfISO: string
-  ): number | typeof Infinity => {
-    const daily = dailyFor(m);
-    if (!daily) return Infinity;
-    const today = new Date();
-    const asOf = new Date(asOfISO);
-    const forward = Math.max(0, diffInDays(asOf, today));
-    const projected = m.pillsRemaining - daily * forward;
-    return Math.max(0, projected);
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 86400000); // 24h
-
-    return () => clearInterval(timer);
-  }, []);
 
   const addPatient = async (): Promise<void> => {
     if (!user || !newPatientName.trim()) return;
@@ -318,6 +229,11 @@ const MedicationSystem = () => {
 
     const name = newMedication.trim();
     const qty = parseInt(newMedicationPills || '0', 10) || 0;
+
+    if (qty < 0) {
+      alert(t('home.patients.quantityNegative'));
+      return;
+    }
 
     const existing = medsFS.find(
       m => m.name.toLowerCase() === name.toLowerCase()
@@ -462,7 +378,11 @@ const MedicationSystem = () => {
   ) => {
     if (!user) return;
     const q = parseInt(value, 10);
-    if (!q || q <= 0) return;
+    if (isNaN(q) || q < 0) {
+      alert(t('home.patients.quantityNegative'));
+      return;
+    }
+    if (q === 0) return;
 
     try {
       await addPurchase(user.uid, {
@@ -476,16 +396,6 @@ const MedicationSystem = () => {
       const error = e as { message?: string };
       alert(error?.message ?? t('home.history.addFailed'));
     }
-  };
-
-  const formatDate = (date: Date | string): string => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const locale = t('_locale', 'uk-UA');
-    return d.toLocaleDateString(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
   };
 
   const getWarningLevel = (daysRemaining: number): WarningLevel => {
@@ -505,760 +415,71 @@ const MedicationSystem = () => {
     }
   };
 
-  const Header = () => (
-    <div className="bg-white dark:bg-gray-800 shadow-lg mb-6 px-6 py-4">
-      <div className="mx-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
-            <Pill className="mr-3 text-blue-600 dark:text-blue-400" />
-            <span className="hidden sm:inline">Axels Pills</span>
-            <span className="sm:hidden">Pills</span>
-          </h1>
-
-          {/* Desktop menu */}
-          <div className="hidden md:flex items-center gap-2">
-            <LanguageSwitcher />
-            <ThemeSwitcher />
-            <button
-              onClick={async () => {
-                try {
-                  const { signOut } = await import('firebase/auth');
-                  const { auth } = await import('../firebase');
-                  await signOut(auth);
-                  navigate('/', { replace: true });
-                } catch (error) {
-                  console.error('Logout error:', error);
-                }
-              }}
-              className="px-4 py-2 rounded-md font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              {t('home.logout')}
-            </button>
-          </div>
-
-          {/* Mobile burger button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-3">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-600">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('home.settings')}
-              </span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <LanguageSwitcher />
-              <ThemeSwitcher />
-              <button
-                onClick={async () => {
-                  try {
-                    const { signOut } = await import('firebase/auth');
-                    const { auth } = await import('../firebase');
-                    await signOut(auth);
-                    navigate('/', { replace: true });
-                  } catch (error) {
-                    console.error('Logout error:', error);
-                  }
-                }}
-                className="w-full px-4 py-2 rounded-md font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-left"
-              >
-                {t('home.logout')}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <nav className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setCurrentPage('patients')}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
-            currentPage === 'patients'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-          }`}
-        >
-          <User className="w-4 h-4 inline-block mr-2" />
-          {t('home.tabs.patients')}
-        </button>
-        <button
-          onClick={() => setCurrentPage('medications')}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
-            currentPage === 'medications'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-          }`}
-        >
-          <Package className="w-4 h-4 inline-block mr-2" />
-          {t('home.tabs.medications')}
-        </button>
-        <button
-          onClick={() => setCurrentPage('history')}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
-            currentPage === 'history'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-          }`}
-        >
-          <History className="w-4 h-4 inline-block mr-2" />
-          {t('home.tabs.history')}
-        </button>
-      </nav>
-    </div>
-  );
-
-  const PatientsPage = () => (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
-      {/* Добавление нового пациента */}
-      <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-6">
-        <h2 className="text-xl font-semibold mb-3 text-blue-800 dark:text-white">
-          {t('home.patients.addPatient')}
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <input
-            type="text"
-            name="patientName"
-            placeholder={t('home.patients.patientName')}
-            value={newPatientName}
-            onChange={e => setNewPatientName(e.target.value)}
-            className="flex-1 p-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <button
-            onClick={addPatient}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            {t('home.patients.add')}
-          </button>
-        </div>
-      </div>
-
-      {/* Список пациентов */}
-      <div className="space-y-6">
-        {patients.map(patient => (
-          <div
-            key={patient.id}
-            className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center">
-                <User className="w-5 h-5 mr-2 text-green-600" />
-                {patient.name}
-              </h3>
-              <button
-                onClick={() => removePatient(patient.id)}
-                className="text-red-600 dark:text-red-400 hover:text-red-800 p-1"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Добавление препарата */}
-            <div className="bg-white dark:bg-gray-800 p-3 rounded-md mb-4">
-              <div className="flex gap-3 flex-wrap">
-                <input
-                  type="text"
-                  placeholder={t('home.patients.medicationName')}
-                  value={selectedPatient === patient.id ? newMedication : ''}
-                  onChange={e => {
-                    setNewMedication(e.target.value);
-                    setSelectedPatient(patient.id);
-                  }}
-                  className="flex-1 p-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-                <input
-                  type="number"
-                  placeholder={t('home.patients.pillsCount')}
-                  value={
-                    selectedPatient === patient.id ? newMedicationPills : ''
-                  }
-                  onChange={e => {
-                    setNewMedicationPills(e.target.value);
-                    setSelectedPatient(patient.id);
-                  }}
-                  className="w-32 p-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-                <button
-                  onClick={() => addMedication(patient.id)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
-                >
-                  <Pill className="w-4 h-4 mr-1" />
-                  {t('home.patients.add')}
-                </button>
-              </div>
-            </div>
-
-            {/* Список препаратов */}
-            <div className="space-y-3">
-              {(medsByPatient[patient.id] || []).map(medication => {
-                const daysRemaining = getDaysRemaining(medication);
-                const warningLevel = getWarningLevel(daysRemaining);
-
-                return (
-                  <div
-                    key={medication.id}
-                    className={`dark:bg-gray-700 bg-white p-4 rounded-md border-l-4 border-blue-500 ${
-                      warningLevel !== 'normal'
-                        ? 'ring-2 ring-opacity-50 ' +
-                          getWarningColor(warningLevel)
-                        : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-3 ">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-lg text-gray-800 dark:text-white flex items-center">
-                          <Pill className="w-4 h-4 mr-2 text-blue-600" />
-                          {medication.name}
-                        </h4>
-                        <div className=" flex flex-wrap items-center mt-1 gap-2">
-                          <span className="text-sm text-gray-600 dark:text-white">
-                            {t('home.patients.remaining')}:{' '}
-                            <strong>
-                              {medication.pillsRemaining}{' '}
-                              {t('home.patients.tabs')}
-                            </strong>
-                          </span>
-                          <span className="text-sm text-gray-600 dark:text-white">
-                            {t('home.patients.enoughFor')}:{' '}
-                            <strong>
-                              {daysRemaining === Infinity ? '∞' : daysRemaining}{' '}
-                              {t('home.patients.days')}
-                            </strong>
-                          </span>
-                          {warningLevel !== 'normal' && (
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full flex items-center ${getWarningColor(warningLevel)}`}
-                            >
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              {warningLevel === 'critical'
-                                ? t('home.patients.urgentRefill')
-                                : t('home.patients.endingSoon')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          removeMedication(patient.id, medication.id)
-                        }
-                        className="text-red-500 hover:text-red-700 p-1"
-                        title={t('home.patients.unbindFromPatient')}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center mb-2">
-                      <Clock className="w-4 h-4 mr-2 text-gray-600  dark:text-white " />
-                      <span className="text-sm text-gray-600 font-medium dark:text-white">
-                        {t('home.patients.schedule')}:
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 sm:ml-6">
-                      {(['morning', 'afternoon', 'evening'] as TimeOfDay[]).map(
-                        time => {
-                          const labels: Record<TimeOfDay, string> = {
-                            morning: t('home.patients.morning'),
-                            afternoon: t('home.patients.afternoon'),
-                            evening: t('home.patients.evening'),
-                          };
-
-                          return (
-                            <label
-                              key={time}
-                              className="flex items-center cursor-pointer"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={medication[time]}
-                                onChange={() => {
-                                  updateDoc(
-                                    doc(
-                                      db,
-                                      `users/${user!.uid}/patients/${patient.id}/medications/${medication.id}`
-                                    ),
-                                    { [time]: !medication[time] }
-                                  );
-                                }}
-                                className="sr-only"
-                              />
-                              <div
-                                className={`flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                                  medication[time]
-                                    ? 'bg-green-100 text-green-800 border-2 border-green-300 dark:bg-blue-600 dark:text-white dark:border-blue-500'
-                                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                }`}
-                              >
-                                {medication[time] && (
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                )}
-                                {labels[time]}
-                              </div>
-                            </label>
-                          );
-                        }
-                      )}
-                    </div>
-
-                    <div className="mt-2 sm:ml-6 text-sm text-gray-600 dark:text-white">
-                      <strong>{t('home.patients.take')}:</strong>{' '}
-                      {getScheduleText(medication)}
-                      <span className="ml-4">
-                        <strong>{t('home.patients.perMonth')}:</strong> ~
-                        {getMonthlyConsumption(medication)}{' '}
-                        {t('home.patients.tabs')}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {(!medsByPatient[patient.id] ||
-                medsByPatient[patient.id].length === 0) && (
-                <div className="text-gray-500 dark:text-gray-400 text-center py-4 italic">
-                  {t('home.patients.noPrescribed')}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {patients.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <User className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-lg">{t('home.patients.noPatients')}</p>
-        </div>
-      )}
-    </div>
-  );
-
-  const MedicationsPage = () => {
-    const allMedications = getAllMedications(selectedDate);
-    const criticalMedications = allMedications.filter(
-      med => getWarningLevel(med.daysRemaining) === 'critical'
-    );
-    const warningMedications = allMedications.filter(
-      med => getWarningLevel(med.daysRemaining) === 'warning'
-    );
-
-    return (
-      <div className="space-y-6">
-        {/* Календарь и текущая дата */}
-        <div className="mt-2">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            <span className="text-sm text-gray-700 dark:text-white">
-              {t('home.medications.date')}:
-            </span>
-            <span className="text-sm text-blue-600">
-              {formatDate(selectedDate)}
-            </span>
-          </div>
-
-          <div className="w-full sm:max-w-[300px]">
-            <DatePicker
-              selected={new Date(selectedDate)}
-              onChange={(date: Date | null) => {
-                if (date) {
-                  const y = date.getFullYear();
-                  const m = String(date.getMonth() + 1).padStart(2, '0');
-                  const d = String(date.getDate()).padStart(2, '0');
-                  setSelectedDate(`${y}-${m}-${d}`);
-                }
-              }}
-              inline
-              calendarClassName="w-full"
-            />
-          </div>
-        </div>
-
-        {/* Сповіщення */}
-        {(criticalMedications.length > 0 || warningMedications.length > 0) && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-              <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
-              {t('home.medications.notifications')}
-            </h2>
-
-            {criticalMedications.length > 0 && (
-              <div className="mb-4">
-                <h3 className="font-medium text-red-800 mb-2 dark:text-red-400">
-                  {t('home.medications.criticalLevel')}
-                </h3>
-                <div className="space-y-2">
-                  {criticalMedications.map((med, index) => (
-                    <div
-                      key={index}
-                      className="bg-red-50 border-l-4 border-red-400 p-3 rounded"
-                    >
-                      <p className="text-red-800">
-                        <strong>{med.name}</strong> -{' '}
-                        {t('home.patients.remaining').toLowerCase()}{' '}
-                        {med.totalPills} {t('home.patients.tabs')} (
-                        {t('home.patients.enoughFor').toLowerCase()}{' '}
-                        {med.daysRemaining} {t('home.patients.days')})
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {warningMedications.length > 0 && (
-              <div>
-                <h3 className="font-medium text-yellow-800 dark:text-yellow-400 mb-2">
-                  {t('home.medications.endingSoon')}
-                </h3>
-                <div className="space-y-2">
-                  {warningMedications.map((med, index) => (
-                    <div
-                      key={index}
-                      className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded"
-                    >
-                      <p className="text-yellow-800">
-                        <strong>{med.name}</strong> -{' '}
-                        {t('home.patients.remaining').toLowerCase()}{' '}
-                        {med.totalPills} {t('home.patients.tabs')} (
-                        {t('home.patients.enoughFor').toLowerCase()}{' '}
-                        {med.daysRemaining} {t('home.patients.days')})
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Общий список препаратов */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center">
-            <Package className="w-6 h-6 mr-2 text-green-600" />
-            {t('home.medications.allMedications')}
-          </h2>
-
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700 border-b">
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.medicationName')}
-                  </th>
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.totalRemaining')}
-                  </th>
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.dailyConsumption')}
-                  </th>
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.daysRemaining')}
-                  </th>
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.patients')}
-                  </th>
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.status')}
-                  </th>
-                  <th className="text-left p-3 font-semibold text-gray-800 dark:text-white">
-                    {t('home.medications.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {allMedications.map((medication, index) => {
-                  const warningLevel = getWarningLevel(
-                    medication.daysRemaining
-                  );
-
-                  return (
-                    <tr
-                      key={index}
-                      className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
-                    >
-                      <td className="p-3 font-medium text-gray-800 dark:text-white">
-                        {medication.name}
-                      </td>
-                      <td className="p-3 text-gray-800 dark:text-white">
-                        {medication.totalPills} {t('home.patients.tabs')}
-                      </td>
-                      <td className="p-3 text-gray-800 dark:text-white">
-                        {medication.dailyConsumption} {t('home.patients.tabs')}
-                      </td>
-                      <td className="p-3 text-gray-800 dark:text-white">
-                        {medication.daysRemaining === Infinity
-                          ? '∞'
-                          : medication.daysRemaining}
-                      </td>
-                      <td className="p-3 text-sm text-gray-600 dark:text-gray-300">
-                        {medication.patients
-                          .map(pid => patientNameById[pid])
-                          .filter(Boolean)
-                          .join(', ') || ''}
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getWarningColor(warningLevel)}`}
-                        >
-                          {warningLevel === 'critical'
-                            ? t('home.medications.critical')
-                            : warningLevel === 'warning'
-                              ? t('home.medications.warning')
-                              : t('home.medications.normal')}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            placeholder={t('home.medications.purchased')}
-                            value={buyQty[medication.id as string] ?? ''}
-                            onChange={e =>
-                              setBuyQty(prev => ({
-                                ...prev,
-                                [medication.id as string]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                const id = medication.id as string;
-                                const val = buyQty[id];
-                                if (!val) return;
-                                handleAddPurchase(
-                                  { id, name: medication.name },
-                                  val
-                                );
-                                setBuyQty(prev => ({ ...prev, [id]: '' }));
-                              }
-                            }}
-                            className="w-28 p-1 text-xs border rounded focus:ring-2 focus:ring-blue-500"
-                          />
-                          <button
-                            onClick={() => {
-                              const id = medication.id as string;
-                              const val = buyQty[id];
-                              if (!val) return;
-                              handleAddPurchase(
-                                { id, name: medication.name },
-                                val
-                              );
-                              setBuyQty(prev => ({ ...prev, [id]: '' }));
-                            }}
-                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                            title="Додати"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {allMedications.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg">{t('home.medications.noMedications')}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const HistoryPage = () => {
-    return (
-      <div className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-white flex items-center">
-              <History className="w-6 h-6 mr-2 text-green-600" />
-              {t('home.history.title')}
-            </h2>
-            <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full text-center">
-              {t('home.history.recordsFound')} {purchases.length}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {purchases.map(p => (
-              <div key={p.id} className="border rounded-lg p-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start">
-                  <div className="flex-1">
-                    <div className="font-semibold text-lg dark:text-white">
-                      {p.medicationName}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-white">
-                      {new Date(p.timestamp).toLocaleString('uk-UA')}
-                    </div>
-
-                    {editing?.id === p.id ? (
-                      <div className="mt-3 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <label className="text-sm text-gray-600 dark:text-white">
-                            {t('home.history.quantity')}
-                          </label>
-                          <input
-                            type="number"
-                            value={editBuff.quantity}
-                            onChange={e =>
-                              setEditBuff(prev => ({
-                                ...prev,
-                                quantity:
-                                  parseInt(e.target.value || '0', 10) || 0,
-                              }))
-                            }
-                            className="w-28 p-1 text-sm border rounded"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
-                            {t('home.history.notes')}
-                          </label>
-                          <input
-                            type="text"
-                            value={editBuff.notes}
-                            onChange={e =>
-                              setEditBuff(prev => ({
-                                ...prev,
-                                notes: e.target.value,
-                              }))
-                            }
-                            className="w-full p-2 text-sm border rounded"
-                            placeholder={t('home.history.addNote')}
-                          />
-                        </div>
-
-                        <div className="flex gap-2">
-                          <button
-                            disabled={savingEdit}
-                            onClick={async () => {
-                              if (!user) return;
-                              if (editBuff.quantity < 0) {
-                                alert(t('home.history.quantityNegative'));
-                                return;
-                              }
-                              try {
-                                setSavingEdit(true);
-                                await updatePurchase(user.uid, p, {
-                                  quantity: editBuff.quantity,
-                                  notes: editBuff.notes,
-                                });
-                                setEditing(null);
-                              } catch (err: unknown) {
-                                const error = err as { message?: string };
-                                alert(
-                                  error?.message ?? t('home.history.saveError')
-                                );
-                              } finally {
-                                setSavingEdit(false);
-                              }
-                            }}
-                            className="px-3 py-1 text-sm bg-green-600 text-white rounded disabled:opacity-60"
-                          >
-                            {t('home.history.save')}
-                          </button>
-                          <button
-                            disabled={savingEdit}
-                            onClick={() => setEditing(null)}
-                            className="px-3 py-1 text-sm bg-gray-100 text-gray-800  rounded"
-                          >
-                            {t('home.history.cancel')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="mt-1">
-                          <span className="text-sm text-gray-600 dark:text-white">
-                            {t('home.history.quantity')}
-                          </span>
-                          <span className="font-semibold text-green-700">
-                            +{p.quantity}
-                          </span>
-                        </div>
-                        {p.notes && (
-                          <div className="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                            {t('home.history.notes')} {p.notes}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:ml-4">
-                    {editing?.id === p.id ? null : (
-                      <button
-                        onClick={() => {
-                          setEditing(p);
-                          setEditBuff({
-                            quantity: p.quantity,
-                            notes: p.notes ?? '',
-                          });
-                        }}
-                        className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded"
-                      >
-                        {t('home.history.edit')}
-                      </button>
-                    )}
-                    <button
-                      onClick={async () => {
-                        if (!user) return;
-                        if (
-                          confirm(
-                            t('home.history.deleteConfirm', {
-                              quantity: p.quantity,
-                            })
-                          )
-                        ) {
-                          try {
-                            await deletePurchase(user.uid, p);
-                            if (editing?.id === p.id) setEditing(null);
-                          } catch (err: unknown) {
-                            const error = err as { message?: string };
-                            alert(
-                              error?.message ?? t('home.history.deleteError')
-                            );
-                          }
-                        }
-                      }}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
-                    >
-                      {t('home.history.delete')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Header />
+      <Header
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+      />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
-        {currentPage === 'patients' && PatientsPage()}
-        {currentPage === 'medications' && MedicationsPage()}
-        {currentPage === 'history' && HistoryPage()}
+        {currentPage === 'patients' && (
+          <PatientsPage
+            patients={patients}
+            newPatientName={newPatientName}
+            setNewPatientName={setNewPatientName}
+            addPatient={addPatient}
+            removePatient={removePatient}
+            newMedication={newMedication}
+            setNewMedication={setNewMedication}
+            newMedicationPills={newMedicationPills}
+            setNewMedicationPills={setNewMedicationPills}
+            selectedPatient={selectedPatient}
+            setSelectedPatient={setSelectedPatient}
+            addMedication={addMedication}
+            medsByPatient={medsByPatient}
+            removeMedication={removeMedication}
+            getDaysRemaining={getDaysRemaining}
+            getWarningLevel={getWarningLevel}
+            getWarningColor={getWarningColor}
+            getScheduleText={getScheduleText}
+            getMonthlyConsumption={getMonthlyConsumption}
+            user={user}
+          />
+        )}
+        {currentPage === 'medications' && (
+          <MedicationsPage
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            allMedications={getAllMedications(selectedDate)}
+            criticalMedications={getAllMedications(selectedDate).filter(
+              med => getWarningLevel(med.daysRemaining) === 'critical'
+            )}
+            warningMedications={getAllMedications(selectedDate).filter(
+              med => getWarningLevel(med.daysRemaining) === 'warning'
+            )}
+            patientNameById={patientNameById}
+            buyQty={buyQty}
+            setBuyQty={setBuyQty}
+            handleAddPurchase={handleAddPurchase}
+            getWarningLevel={getWarningLevel}
+            getWarningColor={getWarningColor}
+          />
+        )}
+        {currentPage === 'history' && (
+          <HistoryPage
+            purchases={purchases}
+            medsFS={medsFS}
+            editing={editing}
+            setEditing={setEditing}
+            editBuff={editBuff}
+            setEditBuff={setEditBuff}
+            savingEdit={savingEdit}
+            setSavingEdit={setSavingEdit}
+            user={user}
+          />
+        )}
       </div>
 
       {toast.open && (
