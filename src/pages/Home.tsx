@@ -319,6 +319,11 @@ const MedicationSystem = () => {
     const name = newMedication.trim();
     const qty = parseInt(newMedicationPills || '0', 10) || 0;
 
+    if (qty < 0) {
+      alert(t('home.patients.quantityNegative'));
+      return;
+    }
+
     const existing = medsFS.find(
       m => m.name.toLowerCase() === name.toLowerCase()
     );
@@ -462,7 +467,11 @@ const MedicationSystem = () => {
   ) => {
     if (!user) return;
     const q = parseInt(value, 10);
-    if (!q || q <= 0) return;
+    if (isNaN(q) || q < 0) {
+      alert(t('home.patients.quantityNegative'));
+      return;
+    }
+    if (q === 0) return;
 
     try {
       await addPurchase(user.uid, {
@@ -679,6 +688,7 @@ const MedicationSystem = () => {
                 />
                 <input
                   type="number"
+                  min="0"
                   placeholder={t('home.patients.pillsCount')}
                   value={
                     selectedPatient === patient.id ? newMedicationPills : ''
@@ -1024,6 +1034,7 @@ const MedicationSystem = () => {
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
+                            min="0"
                             placeholder={t('home.medications.purchased')}
                             value={buyQty[medication.id as string] ?? ''}
                             onChange={e =>
@@ -1116,6 +1127,7 @@ const MedicationSystem = () => {
                           </label>
                           <input
                             type="number"
+                            min="0"
                             value={editBuff.quantity}
                             onChange={e =>
                               setEditBuff(prev => ({

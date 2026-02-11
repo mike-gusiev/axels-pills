@@ -96,7 +96,8 @@
       "notAssigned": "не назначено",
       "urgentRefill": "Терміново поповнити!",
       "endingSoon": "Скоро закінчиться",
-      "unbindFromPatient": "Відв'язати від пацієнта"
+      "unbindFromPatient": "Відв'язати від пацієнта",
+      "quantityNegative": "Кількість пігулок не може бути від'ємною"
     },
     "medications": {
       "date": "Дата",

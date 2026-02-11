@@ -96,7 +96,8 @@
       "notAssigned": "not assigned",
       "urgentRefill": "Urgent refill!",
       "endingSoon": "Ending soon",
-      "unbindFromPatient": "Unbind from patient"
+      "unbindFromPatient": "Unbind from patient",
+      "quantityNegative": "Quantity of pills cannot be negative"
     },
     "medications": {
       "date": "Date",
