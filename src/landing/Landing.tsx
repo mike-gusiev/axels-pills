@@ -1,11 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Navigation from './components/Navigation';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import About from './components/About';
-import Footer from './components/Footer';
-
+import { Navigation, Hero, Features, About, Footer } from './components';
 interface LandingProps {
   onGetStarted: () => void;
 }
